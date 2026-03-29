@@ -8,7 +8,7 @@
 </p>
 <p align="center">
   <a href="https://github.com/maxanatsko/pbi-desktop-mcp-public/releases">
-    <img src="https://img.shields.io/badge/Latest%20Release-Download%20Now-cc0000?style=for-the-badge&logo=github&logoColor=white" alt="Download Latest Release" height="50">
+    <img src="https://img.shields.io/badge/Latest%20Release-Download%20Now-cc0000?style=for-the-badge&logo=github&logoColor=white" alt="Download Latest Release" width="400">
   </a>
 </p>
 <p align="center">
