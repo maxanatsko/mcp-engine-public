@@ -1,0 +1,4 @@
+interface:
+  display_name: "PBI Query"
+  short_description: "Write and analyze DAX queries"
+  default_prompt: "Use $mcp-engine-query to write, scope, and analyze a DAX query for this model."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "PBI Testing Changes"
+  short_description: "Test, checkpoint, and rollback safely"
+  default_prompt: "Use $mcp-engine-testing-changes to validate tests, checkpoints, and model change workflows."

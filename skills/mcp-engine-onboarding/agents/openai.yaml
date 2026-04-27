@@ -1,0 +1,4 @@
+interface:
+  display_name: "PBI Onboarding"
+  short_description: "Set up MCP Engine safely"
+  default_prompt: "Use $mcp-engine-onboarding to guide MCP Engine setup for my Power BI workflow, recommend safe preferences, policies, tests, and produce a tailored playbook."

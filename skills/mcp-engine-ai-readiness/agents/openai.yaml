@@ -1,0 +1,4 @@
+interface:
+  display_name: "PBI AI Readiness"
+  short_description: "Prepare semantic models for Copilot"
+  default_prompt: "Use $mcp-engine-ai-readiness to assess this Power BI model for Copilot readiness and draft AI readiness artifacts."

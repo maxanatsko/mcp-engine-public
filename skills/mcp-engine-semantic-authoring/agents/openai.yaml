@@ -1,0 +1,4 @@
+interface:
+  display_name: "PBI Semantic Authoring"
+  short_description: "Build and refine semantic model logic"
+  default_prompt: "Use $mcp-engine-semantic-authoring to author measures, calc groups, and semantic model logic."

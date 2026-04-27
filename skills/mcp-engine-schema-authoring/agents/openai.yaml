@@ -1,0 +1,4 @@
+interface:
+  display_name: "PBI Schema Authoring"
+  short_description: "Edit Power BI model schema safely"
+  default_prompt: "Use $mcp-engine-schema-authoring to plan and apply safe schema changes to this model."

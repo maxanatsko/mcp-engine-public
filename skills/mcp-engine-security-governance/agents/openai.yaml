@@ -1,0 +1,4 @@
+interface:
+  display_name: "PBI Security Governance"
+  short_description: "Handle RLS, policy, masking, and audit"
+  default_prompt: "Use $mcp-engine-security-governance to review or change security, policy, masking, or audit behavior."

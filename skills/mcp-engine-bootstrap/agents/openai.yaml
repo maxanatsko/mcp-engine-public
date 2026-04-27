@@ -1,0 +1,4 @@
+interface:
+  display_name: "PBI Bootstrap"
+  short_description: "Start MCP Engine sessions correctly"
+  default_prompt: "Use $mcp-engine-bootstrap to connect to the right model and prepare the session."
