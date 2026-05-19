@@ -1,0 +1,4 @@
+interface:
+  display_name: "PBI Model Quality"
+  short_description: "Score semantic model quality"
+  default_prompt: "Use $mcp-engine-model-quality to assess this Power BI semantic model for bad or questionable practices and produce a source-backed scorecard with recommendations."
