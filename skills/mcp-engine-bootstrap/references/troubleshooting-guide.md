@@ -4,7 +4,7 @@ This guide lists common issues when using SemanticOps MCP, formerly MCP Engine, 
 
 ## Related Tools and Resources
 
-- `manage_model_connection`: `operation="open"|"list"|"list_workspaces"|"select"|"get_current"|"reload"|"authenticate"|"sign_out"|"set_impersonation"` for model selection, service sign-in, and metadata refresh
+- `manage_model_connection`: `operation="list"|"list_workspaces"|"select"|"get_current"|"reload"|"authenticate"|"sign_out"|"set_impersonation"` for model selection, service sign-in, and metadata refresh
 - `list_model`: `operation="list"|"search"|"analyze"|"info"` for discovery and diagnosis
 - `run_query`: `operation="execute"|"analyze"|"vertipaq"|"test_access"` for validation and performance checks
 - `tool-invocation-conventions.md`: argument shape and bulk patterns

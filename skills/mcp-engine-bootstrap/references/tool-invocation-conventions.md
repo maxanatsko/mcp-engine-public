@@ -78,7 +78,7 @@ Examples:
 
 - `manage_semantic` uses `new_name`, `format_string`, `display_folder`, `is_hidden` in spec.
 - `manage_schema` uses `new_name`, `format_string`, `display_folder`, `is_hidden` in spec.
-- `list_model` uses `query`, `mode`, `types`, `case_sensitive`, `include_expression`, `include_fields`, `limit_per_type`, `preview_chars`, `format`, `limit`, `offset` in spec.
+- `list_model` uses `query`, `mode`, `types`, `case_sensitive`, `include_expression`, `include_fields`, `limit_per_type`, `preview_chars`, `format`, `limit`, `offset` in spec. For grouped search, prefer `limit_per_type`; `limit` is accepted as a compatibility alias.
 
 Use the MCP `tools/list` method (and each tool's `inputSchema`) to confirm parameter names.
 
@@ -203,7 +203,7 @@ All paginated responses include a `pagination` object:
 - **`count == pagination.total`**: The top-level `count` field equals `pagination.total` for backwards compatibility.
 - **Deterministic ordering**: Results are sorted consistently (typically alphabetically by name) for stable pagination.
 - **Silent capping**: If `limit` exceeds the tool's max, it's silently capped (no error).
-- **Grouped search exception**: `list_model` search with `format: "grouped"` uses `limit_per_type` instead of global pagination.
+- **Grouped search exception**: `list_model` search with `format: "grouped"` uses `limit_per_type` instead of global pagination. `limit` is accepted as a compatibility alias for the same per-bucket cap.
 
 ### Tools with Pagination
 
