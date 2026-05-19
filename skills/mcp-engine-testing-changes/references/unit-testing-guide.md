@@ -4,7 +4,7 @@ This guide explains how to use the Pro Unit Testing feature to create, run, and 
 
 ## Related Tools
 
-- `manage_tests` (Pro): Create/run/export tests (13 operations)
+- `manage_tests` (Pro): Create/run/export/transfer tests (14 operations)
 - `list_model`: Inspect model schema for test targets (`operation: "list"`)
 - `run_query`: Validate DAX queries before using in tests (`operation: "execute"`)
 - `manage_model_connection`: Connect to a model before running tests
@@ -34,11 +34,12 @@ This guide explains how to use the Pro Unit Testing feature to create, run, and 
 | `run` | Yes | Execute tests |
 | `runs_list` | Yes | List persisted run history for the connected model |
 | `export` | No | Format results (json/junit/markdown/html) |
+| `export_tests` | No | Export portable test-definition bundles |
+| `import_tests` | No (dry_run); Yes (apply) | Preview/apply portable test-definition bundles |
 | `snapshot` | Yes | Capture/list/delete baselines |
 | `validate` | No | Validate test definitions |
 | `packs_list` | No | List available built-in packs |
 | `packs_apply` | Yes | Generate tests from pack |
-| `suggest` | Yes | LLM-assisted test generation (planned) |
 
 ---
 
@@ -81,6 +82,16 @@ The Tauri test runner uses `runs_list` to hydrate persisted run history for the 
 
 ```json
 { "operation": "export", "spec": { "format": "markdown" } }
+```
+
+### 5. Transfer test definitions
+
+```json
+{ "operation": "export_tests", "spec": { "tags": ["smoke"] } }
+```
+
+```json
+{ "operation": "import_tests", "dry_run": true, "spec": { "bundle": { "kind": "mcp_engine_test_bundle", "bundle_version": "1.0", "exported_at": "2026-05-13T00:00:00Z", "count": 0, "tests": [] } } }
 ```
 
 ---
@@ -593,6 +604,8 @@ Additional notes:
 
 ## Exporting Results
 
+`export` is for run results and reports. To move test definitions between models or machines, use `export_tests` / `import_tests` instead.
+
 ### Export as JSON
 
 ```json
@@ -622,6 +635,100 @@ Notes:
 - `saved_to` is a server-local absolute path. Remote MCP clients may not be able to open that path directly.
 - Relative `save_to_path` values are resolved under `MCP_ENGINE_TESTS_EXPORT_ROOT` (if set), otherwise under `~/.mcp-engine/tests`.
 - Large exports may be automatically saved to disk when they exceed `MCP_ENGINE_TESTS_MAX_EXPORT_BYTES`.
+
+---
+
+## Transferring Test Definitions
+
+Use `export_tests` and `import_tests` for portable test-definition bundles. Bundles contain test definitions only: no run history, no snapshot baselines, and no persisted model identity. Imported tests are saved against the currently connected model so the same bundle can be reused across Desktop and Service models.
+
+Bundles include full `spec`, `assert`, and `context` payloads. If masking is enabled, `export_tests` requires `spec.include_sensitive=true` as an explicit opt-in. Large inline bundles are saved to the configured tests export root and return `saved_to` with `content_omitted: true`.
+
+### Export all tests inline
+
+```json
+{ "operation": "export_tests" }
+```
+
+### Export selected tests
+
+```json
+{
+  "operation": "export_tests",
+  "spec": {
+    "test_ids": ["total-sales-2024", "metadata-quality-descriptions"]
+  }
+}
+```
+
+### Export by filters
+
+```json
+{
+  "operation": "export_tests",
+  "spec": {
+    "tags": ["smoke"],
+    "types": ["measure_assertion", "metadata_compliance"]
+  }
+}
+```
+
+### Save a definition bundle to disk
+
+```json
+{
+  "operation": "export_tests",
+  "spec": {
+    "tags": ["release"],
+    "save_to_path": "./test-bundles/release-tests.json"
+  }
+}
+```
+
+When `save_to_path` is set, or when a bundle exceeds `MCP_ENGINE_TESTS_MAX_EXPORT_BYTES`, the response returns `saved_to`, `content_omitted: true`, and `count` instead of echoing the full bundle.
+
+### Preview an import
+
+```json
+{
+  "operation": "import_tests",
+  "dry_run": true,
+  "spec": {
+    "read_from_path": "./test-bundles/release-tests.json",
+    "mode": "add_update"
+  }
+}
+```
+
+### Apply an import
+
+```json
+{
+  "operation": "import_tests",
+  "dry_run": false,
+  "spec": {
+    "bundle": {
+      "kind": "mcp_engine_test_bundle",
+      "bundle_version": "1.0",
+      "exported_at": "2026-05-13T00:00:00Z",
+      "count": 0,
+      "tests": []
+    },
+    "mode": "add_skip"
+  }
+}
+```
+
+Import modes:
+- `add_update` (default): add new tests and update existing ids.
+- `add_skip`: add new tests and skip existing ids.
+- `fail_on_conflict`: treat existing ids as conflicts and do not apply until resolved.
+
+Validation notes:
+- Schema-invalid tests and malformed bundles block import.
+- Model-reference checks are warnings only. For example, missing measures, roles, tables, or columns do not block the bundle from being previewed or applied.
+- Existing ids owned by another model or global/shared test row are not overwritten by `add_update`; use a new test id or `add_skip` to leave the existing row unchanged.
+- `read_from_path` uses the same export-root policy as `save_to_path`: relative paths resolve under `MCP_ENGINE_TESTS_EXPORT_ROOT` when set, otherwise under the managed tests directory.
 
 ---
 

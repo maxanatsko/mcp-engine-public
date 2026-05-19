@@ -132,7 +132,46 @@ Before/after a change (especially refactors):
 - `run_query` with `operation: "analyze"` (Pro) for performance regressions on representative queries.
 - Consider pinning a checkpoint and/or using changesets before large batches (`../../mcp-engine-testing-changes/references/model-changes-guide.md`).
 
-## 11) Microsoft Fabric and Lakehouse Considerations
+## 11) Model Documentation Reports (Pro)
+
+Use `list_model` with `operation: "report"` to generate curated DOCX/PDF documentation for the connected semantic model.
+
+Common report call shape:
+
+```json
+{
+  "operation": "report",
+  "spec": {
+    "format": "both",
+    "detail_level": "compliance",
+    "report_style": "design_spec",
+    "save_to_path": "./model-report",
+    "overwrite": false,
+    "include_hidden": false,
+    "include_expressions": false,
+    "expression_max_chars": 4000,
+    "include_annotations": false,
+    "include_translations": false,
+    "relationships_enabled": true,
+    "diagram_depth": 1
+  }
+}
+```
+
+Key options:
+
+- `format`: `both`, `docx`, or `pdf`.
+- `detail_level`: `compliance`, `reader_friendly`, or `minimal`.
+- `report_style`: `design_spec` for curated design documentation, or `inventory` for object-by-object inventory.
+- `save_to_path`: base output path without extension; relative paths resolve under the configured export root.
+- `tables_include` / `tables_exclude`: optional table name filters.
+- `fact_tables`: optional fact-table hints for relationship diagrams.
+- `diagrams_include_inactive` and `diagrams_include_bi_directional`: include extra relationship paths in diagrams.
+- `report_title`, `report_classification`, and `report_prepared_for`: optional cover/report metadata.
+
+Reports stay curated and filtered for internal system artifacts. Use `list_model` list/search operations when you need raw metadata inspection.
+
+## 12) Microsoft Fabric and Lakehouse Considerations
 
 When using Microsoft Fabric, modeling decisions differ from traditional Power BI Desktop:
 

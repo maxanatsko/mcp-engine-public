@@ -92,16 +92,19 @@ Ensure:
 - A proper date table exists and is marked as a date table (`manage_schema` with `operation: "update_table"` and `spec: { mark_date_table: true }`).
 - Date column used is a Date/DateTime column.
 
-## Bulk Operations: `bulk_items` (Not `items`)
+## Bulk Operations
 
-Because `items` is used for calculation items, bulk uses `bulk_items`:
+Bulk calc-group operations use the top-level `items` array. Calculation group items stay nested inside each bulk item's `spec`.
+
+- For `create_calc_group`, put calculation items in `spec.items`.
+- For `update_calc_group`, put calculation item changes in `spec.items_upsert` / `spec.items_delete`.
 
 ```json
 {
   "operation": "update_calc_group",
   "transaction": true,
   "dry_run": true,
-  "bulk_items": [
+  "items": [
     {
       "target": "Time Intelligence",
       "spec": {

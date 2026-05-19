@@ -106,13 +106,13 @@ Then reference that list query in the parameter.
 
 ## Update a Parameter
 
-Update always requires `current_value`.
+Update is patch-style: provide `target` plus only the fields you want to change. `current_value` is optional.
 
 If you only change `current_value` (and omit `type` / `required` / `suggested_values`), the server preserves the existing `meta [...]` block (including `AllowedValues`).
 
-If you change `type` and/or `required` (and omit `suggested_values`), the server preserves the existing `AllowedValues` and other `meta [...]` fields when possible.
+If you change `type` and/or `required` without `current_value` (and omit `suggested_values`), the server preserves the existing value expression and existing `AllowedValues` / other `meta [...]` fields when possible.
 
-If you provide `suggested_values`, the server replaces `AllowedValues` to match your request.
+If you provide `suggested_values`, the server replaces `AllowedValues` to match your request and preserves the existing value expression unless you also provide `current_value`.
 
 ```json
 {
@@ -127,8 +127,10 @@ If you provide `suggested_values`, the server replaces `AllowedValues` to match 
 Partial updates:
 
 - If you supply `suggested_values`, the server **replaces** `AllowedValues` to match your request.
-- If you supply `type` and/or `required` (and omit `suggested_values`), the server **updates only** `Type` / `IsParameterQueryRequired` and preserves the rest of the existing `meta [...]` record (including `AllowedValues`).
+- If you supply `type` and/or `required` without `current_value` (and omit `suggested_values`), the server **updates only** `Type` / `IsParameterQueryRequired` and preserves the existing value expression plus the rest of the existing `meta [...]` record (including `AllowedValues`).
   - Note: the server does **not** validate or coerce existing `AllowedValues` when you change `type`. If you change the type, consider also updating `suggested_values` (or set `suggested_values: { mode: "any" }`) to avoid type-incompatible suggestions in the UI.
+- If you provide only `new_name`, `description`, `query_group`, or `clear_query_group`, the value expression and parameter metadata are preserved.
+- A no-op update, including only `allow_compatibility_upgrade`, is rejected.
 
 ## Read / Delete
 

@@ -119,9 +119,9 @@ Fix:
 }
 ```
 
-Exception:
+Calc-group note:
 
-- `manage_semantic` with `create_calc_group` uses `bulk_items` for bulk operations (because `items` is reserved for calculation items).
+- `manage_semantic` calc-group bulk operations use top-level `items[]` like other bulk operations. Calculation group items belong inside each item's `spec.items` for create or `spec.items_upsert` / `spec.items_delete` for update.
 
 Bulk validation notes:
 

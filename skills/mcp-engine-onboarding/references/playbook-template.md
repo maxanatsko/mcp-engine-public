@@ -1,89 +1,111 @@
 # Playbook Template
 
-Use this structure for the final onboarding output. Keep it short, operational, and specific to the user's profile.
+Use this structure for the final onboarding output. Keep it plain-language, short, and specific to the user's setup choices.
 
-## Profile
+## Setup Profile
 
 Summarize:
 
-- Persona.
-- Connection target.
-- Mode posture.
-- Sensitivity level.
-- Risk tolerance.
-- Main workflows.
-- Model scope.
+- License tier and activation status.
+- Server mode: full, read-only, or browse-only.
+- Connection target: Desktop, Service/XMLA, both, or deferred.
+- Primary workflow: local development, shared review, governance, testing, AI readiness, performance troubleshooting, or support.
+- Sensitivity posture.
 
-## Recommended Setup
+## Applied Or Previewed Setup
 
-List:
+Group by state:
 
-- Preferences to inspect or set.
-- Policy packs to preview or apply.
-- Test packs to preview or apply.
-- Model-specific actions that require a connection.
-- Docs/resources/skills to use next.
+- Applied: approved changes already made.
+- Previewed only: packs or tests shown but not applied.
+- Recommended next: useful setup not yet approved.
+- Deferred: requires a model, Pro/Enterprise, admin setup, or user-provided details.
+- Explicitly not changed: important for trust and safety.
 
-Separate items into:
-
-- Approved and applied.
-- Approved preview only.
-- Recommended but not applied.
-- Deferred until a model is connected.
-
-## Daily Workflow
-
-Include the normal loop:
-
-1. Confirm connection with `manage_model_connection`.
-2. Inspect model context with `list_model`.
-3. Use the relevant skill for the task: `mcp-engine-query`, `mcp-engine-semantic-authoring`, `mcp-engine-schema-authoring`, `mcp-engine-security-governance`, `mcp-engine-testing-changes`, or `mcp-engine-ai-readiness`.
-4. Keep tool payloads aligned with `docs://tool-invocation-conventions`.
-
-## Safe-Change Workflow
+## Masking
 
 Include:
 
-- Confirm mode and policy status.
-- Create or verify a checkpoint when broad edits are planned.
-- Preview policy or test pack changes first.
-- Make one narrow change batch at a time.
-- Run targeted validation before broader suites.
+- PII masking choice.
+- Numeric masking choice.
+- Force-mask tables/columns, if any.
+- Exclude tables/columns, if any.
+- Reminder that masking helps with safe sharing but is not access control.
 
-## Validation Workflow
-
-Include:
-
-- Preview recommended `manage_tests` packs with `dry_run: true`.
-- Save generated tests only after approval.
-- Run the smallest useful scope first.
-- Export or summarize results when the user needs evidence.
-
-## Troubleshooting Workflow
+## Guardrails
 
 Include:
 
-- Re-check current connection.
-- Reload metadata after external Power BI changes.
-- Use read-only discovery before write retries.
-- Ask for a short failure window and exact tool payload for host/client differences.
+- Built-in policy packs selected, previewed, or applied.
+- Custom guardrails requested by the user.
+- Whether deletes, renames, security edits, masking changes, refresh, or partition operations are blocked, confirm-required, or unchanged.
+- Note when policy edits are unavailable due to mode, tier, or Enterprise admin bundle.
 
-## Example Prompts
+## Preferences And Memory
 
-Provide prompts tailored to the profile, such as:
+Include:
 
-- "Check my current SemanticOps MCP connection and tell me what mode and model I am using."
-- "Preview the recommended policy packs for this workflow, but do not apply them yet."
-- "Preview starter test packs for this model and explain what each generated test would cover."
-- "Help me make this model change safely, with dependency impact and validation before edits."
-- "Assess this model for AI readiness and draft the next improvements."
+- Naming conventions saved or recommended.
+- Glossary and aliases saved or recommended.
+- Row limits, formatting defaults, or response style.
+- Scope: global, workspace, or model.
+- Reminder that secrets and row-level extracts were not stored.
 
-## Avoid
+## Change Safety
 
-List concrete cautions:
+Include:
 
-- Do not run broad refresh or destructive write operations without explicit approval.
-- Do not treat perspectives as security controls.
-- Do not rely on confirmation prompts as the only compliance control.
-- Do not expose sensitive values in summaries or examples.
-- Do not apply model-specific tests or preferences before the target model is confirmed.
+- Dependency-check preference.
+- Checkpoint preference.
+- Undo/redo or rollback posture.
+- Whether broad edits should require a checkpoint and validation first.
+
+## Tests
+
+Include:
+
+- Test packs previewed or applied.
+- Custom tests requested.
+- Tests deferred because expected business values, role identities, or a connected model are missing.
+- How the user should run or export tests next.
+
+## Reports, Diagnostics, And RLS
+
+Include:
+
+- Model report choice and intended audience.
+- Advanced query diagnostics preference.
+- VertiPaq/performance resources to use when needed.
+- RLS effective-user testing choice and approved identities, if any.
+
+## Enterprise Posture
+
+Include only when relevant:
+
+- Audit logging status or next action.
+- Admin policy bundle status.
+- Any admin handoff message needed.
+- Reminder that centrally managed policy was not overridden.
+
+## Next Session Prompts
+
+Provide copy/paste prompts tailored to the user's choices, such as:
+
+- "Show my current license tier, server mode, connected model, and active masking settings."
+- "Before editing this model, check dependencies and create a checkpoint if the change is broad."
+- "Preview the recommended policy packs for this environment; do not apply until I confirm."
+- "Preview metadata-quality tests for this model and explain what each test covers."
+- "Generate a concise model overview for a business owner; avoid data values."
+- "Use advanced diagnostics to investigate this slow DAX query, but ask before collecting traces."
+- "Test this RLS role as [user@domain.com] and summarize only aggregate results."
+
+## Safety Notes
+
+List only the notes relevant to the user:
+
+- No license key was echoed or stored in preferences.
+- No model changes were made during onboarding unless explicitly approved.
+- No policy/test pack was applied without preview.
+- No sensitive sample data was stored as memory.
+- No audit evidence was exposed unless explicitly requested and approved.
+- Desktop refresh status is best-effort diagnostics, not durable progress tracking.

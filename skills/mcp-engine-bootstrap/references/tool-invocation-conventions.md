@@ -17,6 +17,7 @@ This guide describes consistent JSON argument patterns across tools in this MCP 
 - Some tools support `include_details` to return richer, server-computed details (often token-heavy).
 - `references/*.md` files in this skill are bundled markdown guides. Open them directly from the skill instead of treating them as web URLs.
 - Query outputs may contain `null` for DAX `BLANK`; treat that as query semantics, not automatic evidence that an object is missing.
+- Tool descriptions are intentionally concise because some MCP clients truncate descriptions. Treat `inputSchema` plus these `docs://...` resources as the detailed source of truth.
 
 ## Common Argument Keys
 
@@ -289,16 +290,20 @@ Notes:
 
 When `dry_run=true`, tools typically return `results[].detail` entries describing what would happen, and do not apply changes.
 
-## Bulk Exception: `manage_semantic` with Calc Groups
+## Calc Group Bulk Notes
 
-`manage_semantic` with `create_calc_group` already uses `items` for calculation items, so **bulk uses `bulk_items`**:
+`manage_semantic` uses the top-level `items` array for bulk calc-group operations, the same as other bulk-enabled tools.
+Calculation group items live inside each bulk item's `spec`:
+
+- `create_calc_group`: use `spec.items` for calculation items.
+- `update_calc_group`: use `spec.items_upsert` / `spec.items_delete`.
 
 ```json
 {
   "operation": "update_calc_group",
   "transaction": true,
   "dry_run": true,
-  "bulk_items": [
+  "items": [
     { "target": "Time Intelligence", "spec": { "items_upsert": [{ "name": "YOY", "expression": "/* DAX */" }] } }
   ]
 }
