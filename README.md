@@ -1,7 +1,7 @@
 <p align="center">
   <img src="mcp-engine-logo.svg" alt="SemanticOps MCP Logo" width="96" height="96">
 </p>
-<h1 align="center" style="font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-weight: 600; letter-spacing: -0.011em;">SemanticOps MCP</h1>
+<h1 align="center" style="font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-weight: 600; letter-spacing: -0.011em;">SemanticOps</h1>
 <p align="center" style="font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">Rollback mistakes. Test before deploy. Control what AI can change.</p>
 <p align="center">
   <img src="mcp-engine-demo.gif" alt="SemanticOps MCP Demo" width="100%">
