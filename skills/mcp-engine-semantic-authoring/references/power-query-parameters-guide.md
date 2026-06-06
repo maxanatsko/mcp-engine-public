@@ -147,3 +147,5 @@ Delete:
 ```
 
 `delete_pq_parameter` fails if the target expression does not look like a Power Query parameter (missing `IsParameterQuery=true`).
+
+On Desktop, creating/updating/deleting Power Query parameters updates shared M expressions and returns `desktop_sync_pending=true`. If Power BI Desktop shows the external changes banner, click `Discard`, then call `manage_model_connection` with `operation="reload"` before continuing other operations (non-M write tools are blocked until reload verification succeeds). If multiple M changes were made before reload, responses include `desktop_sync_items[]`.

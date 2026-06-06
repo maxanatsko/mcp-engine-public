@@ -308,6 +308,8 @@ Metric Selector = {
 }
 ```
 
+Use `manage_schema` with `operation: "create_field_parameter"` to create field parameters, or `operation: "update_field_parameter"` to replace them through MCP. The tool generates the `NAMEOF` DAX and applies the metadata that Power BI visuals need. It also supports custom trailing tuple values, for example `("Customer", NAMEOF('Customer'[Customer]), 0, "Dimensions")`, when `spec.extra_columns` is provided.
+
 ### Best Practices
 
 - Use clear display names that match measure/column names
@@ -319,7 +321,6 @@ Metric Selector = {
 ### Limitations
 
 - Field parameters work only in Power BI Service and Desktop (not in Excel)
-- Cannot combine measures and columns in the same field parameter
 - Performance impact is minimal but test with representative queries
 
 ## 16) Release Checklist (Model Hygiene)

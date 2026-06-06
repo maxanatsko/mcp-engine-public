@@ -20,16 +20,19 @@ Partition types:
 
 Common fields in spec:
 
-- `partition_type` (required for create; optional for update if changing)
+- `partition_type` (required for create; optional for update; when omitted on update, MCP infers the existing partition type)
 - `expression` (required unless M + `expression_kind="named"`)
 - `mode`: `Import|DirectQuery|Dual`
 - `query_group`: assign an M partition to a Power Query group
 - `clear_query_group` (update only): clear existing group assignment
+- `schema_unchanged=true`: allowed for M partition expression changes only when the output schema must stay identical
 - Optional formatting:
   - `format_m`: only applies to `partition_type: "M"` with literal expressions
   - `format_dax`: only applies to `partition_type: "Calculated"` with literal expressions
 
 ## Create a Partition
+
+For M partitions on an existing table, provide `columns` matching the existing TOM table schema or set `schema_unchanged=true`.
 
 ```json
 {
@@ -40,6 +43,7 @@ Common fields in spec:
     "partition_type": "M",
     "expression": "let Source = ... in Source",
     "mode": "Import",
+    "schema_unchanged": true,
     "process": true,
     "refresh_type": "Full"
   }
@@ -97,6 +101,8 @@ You can update the partition expression or storage mode. For M partitions you ca
 Schema updates:
 
 - `columns`: array of `{ name, data_type, source_column?, is_hidden?, format_string? }`
+- For M expression updates, provide `columns` when the output shape may change.
+- Use `schema_unchanged=true` only when the M output shape must remain the same; MCP verifies TOM columns before/after the write and again after reload.
 - `drop_extra_columns=true` removes columns not listed (use with extreme caution)
 - `force=true` (only with `drop_extra_columns=true`) bypasses the best-effort DAX/role dependency scan, but structural blocks still apply (relationships, key columns, sort-by)
 
@@ -113,10 +119,13 @@ Notes:
     "expression": "let Source = ... in Source",
     "mode": "Import",
     "partition_type": "M",
+    "schema_unchanged": true,
     "format_m": { "enabled": true, "consent": true }
   }
 }
 ```
+
+After any M partition write on Desktop, responses include `requires_desktop_sync` / `desktop_sync_pending`. If Power BI Desktop shows the external changes banner, click `Discard` to accept MCP's external changes into the open PBIX, then call `manage_model_connection` with `operation="reload"` before continuing other operations (non-M write tools are blocked until reload verification succeeds). If multiple M changes were made before reload, responses include `desktop_sync_items[]`.
 
 ## Assign / Clear Query Group
 

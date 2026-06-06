@@ -49,7 +49,7 @@ Query results are returned in a compact **tabular format** optimized for LLM con
   "display_columns": ["Category", "TotalSales*"],
   "masking_indicator": {
     "marker": "*",
-    "meaning": "value masked (PII or numeric)"
+    "meaning": "values in marked columns are already masked (PII or numeric); marker is display-only"
   },
   "rows": [
     ["Electronics", 15000.50],
@@ -63,8 +63,8 @@ Query results are returned in a compact **tabular format** optimized for LLM con
 **Key response behaviors:**
 
 - **`columns`**: Array of column names (strings)
-- **`display_columns`**: Optional array of display-only column names for model-visible responses. Present when PII or numeric masking was applied and a column header should show a marker such as `*`. Raw `columns` always stay stable.
-- **`masking_indicator`**: Optional machine-readable explanation for display-only masking markers, such as `{"marker":"*","meaning":"value masked (PII or numeric)"}`.
+- **`display_columns`**: Optional array of display-only column names for model-visible responses. Present when PII or numeric masking was applied and a column header should show a marker such as `*`. Raw `columns` always stay stable, and row values for marked columns are already masked by MCP Engine.
+- **`masking_indicator`**: Optional machine-readable explanation for display-only masking markers, such as `{"marker":"*","meaning":"values in marked columns are already masked (PII or numeric); marker is display-only"}`.
 - **`rows`**: Array of row arrays (each row is `object?[]`, values in column order)
 - **`query`**: Omitted by default. Use `spec: { include_query: true }` to echo the query back
 - **`truncated`**: `true` if results were capped by row limits
@@ -74,7 +74,7 @@ Query results are returned in a compact **tabular format** optimized for LLM con
 - `run_query` `operation: "execute"` may include `display_columns` for model-visible calls when PII or numeric masking was applied.
 - `run_query` `operation: "test_access"` may include `results.<role>.numeric_masked` for model-visible calls when the returned scalar value came from a numerically masked column.
 - `list_model` `operation: "analyze"` may include `display_columns` for `preview` mode and root-level `display_column` for `column_stats` mode when PII or numeric masking was applied.
-- When marker metadata is present, `masking_indicator` explains the marker so clients and LLMs can render a legend without guessing.
+- When marker metadata is present, `masking_indicator` explains the marker so clients and LLMs can render a legend without guessing. Do not replace or further redact row values because of the marker; the values have already been masked before the response is returned.
 - App-internal tool surfaces keep raw payloads presentation-free and do not emit these display-only masking markers.
 
 **Row limits:**

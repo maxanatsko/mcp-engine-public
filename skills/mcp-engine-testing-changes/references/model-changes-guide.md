@@ -25,7 +25,7 @@ Tracked model-mutating operations:
 
 | Tool | Operation scope | Transaction behavior |
 | --- | --- | --- |
-| `manage_schema` | tables, partitions, source columns, calculated columns, relationships, hierarchies, calendars | Captures before/after schema and diffs object plus metadata changes |
+| `manage_schema` | tables, field parameters, partitions, source columns, calculated columns, relationships, hierarchies, calendars | Captures before/after schema and diffs object plus metadata changes |
 | `manage_semantic` | measures, KPIs, calculation groups/items, UDFs, named expressions, Power Query parameters | Captures before/after schema and diffs semantic object plus metadata changes |
 | `manage_security` | roles, RLS filters, OLS permissions, perspectives/members | Captures before/after schema and diffs security changes |
 | `manage_localization` | cultures, culture annotations, translations | Captures before/after schema and diffs localization changes |
@@ -246,7 +246,7 @@ Backward compatibility: older clients used `transaction_id` as the identifier fo
 
 Changesets let you stage multiple tool calls and apply them as a batch.
 
-Changesets are scoped to the model that created them. Direct `changeset_id` operations such as add, preview, apply, and delete are rejected when the active connection is a different model. Connection-management operations cannot be queued or replayed inside changesets.
+Changesets are scoped to the model that created them. Direct `changeset_id` operations such as add, preview, apply, and delete are rejected when the active connection is a different model. Connection-management operations, read-only refresh probes, and model changes/history/checkpoint/changeset control tools such as `manage_model_changes` cannot be queued or replayed inside changesets.
 
 Lifecycle:
 - `draft`: can be updated, previewed, applied, or deleted

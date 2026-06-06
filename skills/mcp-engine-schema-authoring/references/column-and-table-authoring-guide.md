@@ -5,6 +5,7 @@ This guide covers common table/column operations, data type gotchas, and schema-
 ## Related Tools
 
 - `manage_schema`: Create/update/delete tables (operations: `create_table`, `update_table`, `delete_table`)
+- `manage_schema`: Create/update field parameters (operations: `create_field_parameter`, `update_field_parameter`)
 - `manage_schema`: Create/update/delete/refresh partitions (operations: `create_partition`, `update_partition`, `delete_partition`, `refresh_partition`)
 - `manage_schema`: Create/delete source columns; update column properties; create/update/delete calculated columns (operations: `create_column`, `delete_column`, `update_column_properties`, `create_calc_column`, `update_calc_column`, `delete_calc_column`)
 - `manage_security`: Manage perspectives (operations: `create_perspective`, `update_perspective`, `delete_perspective`). Perspectives are presentation/curation features hosted on `manage_security` for backward compatibility; see `../../mcp-engine-security-governance/references/perspectives-guide.md`.
@@ -69,6 +70,8 @@ Optional formatting:
 
 `query_group` applies only to M partitions. To change/remove group later, use `manage_schema` `update_partition` with `spec.query_group` or `spec.clear_query_group=true`.
 
+Desktop M writes require a sync step. If Power BI Desktop shows the external changes banner after an M table or partition write, click `Discard` to accept MCP's external changes, then call `manage_model_connection` with `operation="reload"` before continuing.
+
 **Processing options:**
 - `process`: When `true`, refreshes the table after creation (loads data)
 - `refresh_type`: Controls how data is refreshed:
@@ -126,16 +129,95 @@ Example:
 }
 ```
 
+## Field Parameters (`manage_schema`)
+
+Use `create_field_parameter` to create a Power BI field parameter table with the required calculated-table DAX and field-parameter metadata. Use `update_field_parameter` to replace the generated entries and reapply the metadata.
+
+Field parameter creation always runs a Calculate refresh so the generated columns exist before metadata is applied. `spec.process` is supported on `update_field_parameter` only; set it to `false` only when the table columns are already materialized and you want to skip recalculation.
+
+Basic example:
+
+```json
+{
+  "operation": "create_field_parameter",
+  "target": "Parameter",
+  "spec": {
+    "entries": [
+      { "label": "Customer", "field": "'Customer'[Customer]" },
+      { "label": "Category", "field": "'Product'[Category]" },
+      { "label": "Color", "field": "'Product'[Color]" },
+      { "label": "Product", "field": "'Product'[Product]" }
+    ]
+  }
+}
+```
+
+Generated DAX follows the Power BI field parameter tuple pattern:
+
+```dax
+{
+    ("Customer", NAMEOF('Customer'[Customer]), 0),
+    ("Category", NAMEOF('Product'[Category]), 1)
+}
+```
+
+Supported entry fields:
+
+- `label`: display text shown in the slicer.
+- `field`: a DAX field reference such as `[Total Sales]`, `'Sales'[Total Sales]`, or `'Customer'[Customer]`.
+- `ordinal`: optional integer. When omitted, ordinals are generated from entry order.
+- `extra_values`: optional trailing tuple values. Use only with matching `extra_columns`.
+
+Optional custom column names:
+
+- `display_column`: defaults to the table name.
+- `fields_column`: defaults to `<TableName> Fields`.
+- `order_column`: defaults to `<TableName> Order`.
+
+Optional custom trailing columns:
+
+```json
+{
+  "operation": "create_field_parameter",
+  "target": "Parameter",
+  "spec": {
+    "extra_columns": [
+      { "name": "Group", "data_type": "String" },
+      { "name": "Visible", "data_type": "Boolean", "is_hidden": true }
+    ],
+    "entries": [
+      {
+        "label": "Customer",
+        "field": "'Customer'[Customer]",
+        "extra_values": ["Dimensions", true]
+      },
+      {
+        "label": "Revenue",
+        "field": "[Revenue]",
+        "extra_values": ["Measures", true]
+      }
+    ]
+  }
+}
+```
+
+Rules:
+
+- Every entry must provide the same number of `extra_values` as `extra_columns`.
+- Extra values support only DAX literals: string, number, boolean, and null.
+- The tool applies the field-parameter metadata to the fields column and hides the fields/order columns.
+- Delete a field parameter with `delete_table`; there is no separate delete operation.
+
 ## Column Properties (`manage_schema` with `update_column_properties`)
 
 Key fields in spec:
 
-- `new_name`, `description`, `is_hidden`, `format_string`, `data_category`, `display_folder`
+- `new_name`, `data_type`, `description`, `is_hidden`, `format_string`, `data_category`, `display_folder`
 - `source_column`: update the underlying source mapping for non-calculated (data) columns (useful after M output renames)
 - `summarize_by`: `none|sum|min|max|average|count|distinct_count`
 - `sort_by`: another column in the same table (empty string clears sort-by)
 
-Example: set format and sort-by:
+Example: change type and set sort-by:
 
 ```json
 {
@@ -143,6 +225,7 @@ Example: set format and sort-by:
   "table": "DimDate",
   "target": "MonthName",
   "spec": {
+    "data_type": "String",
     "sort_by": "MonthNumber",
     "summarize_by": "none"
   }

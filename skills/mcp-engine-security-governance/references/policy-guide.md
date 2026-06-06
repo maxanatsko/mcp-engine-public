@@ -226,6 +226,11 @@ For supported delete operations, policy evaluation injects a synthetic `dependen
 - `dependency.count`: total dependent hit count
 - `dependency.types`: distinct dependent types, sorted case-insensitively
 - `dependency.sample_ids`: deterministic sorted sample of up to 5 dependent IDs
+- `dependency.sample_summary`: concise semicolon-separated summary of up to 5 sampled dependents, suitable for custom policy messages
+- `dependency.samples`: structured deterministic sample of up to 5 dependent objects; each sample includes `type`, `name`, `table`, `id`, and `summary`
+- `dependency.samples_truncated`: `true` when more dependency samples were found than are included in `dependency.samples`
+
+Sample fields expose only object type, table/name, and ID details. Expression text and other dependency payloads are intentionally omitted from these policy facts.
 
 Dependency facts currently apply to these operations:
 - `manage_semantic`: `delete_measure`, `delete_kpi`, `delete_calc_group`, `delete_udf`, `delete_named_expression`
@@ -257,7 +262,7 @@ Example (deny delete when a measure still has dependents):
 ```json
 {
   "operation": "import",
-  "data": "{ \"rules\": [ { \"id\": \"deny-dependent-measure-delete\", \"action\": \"deny\", \"tool\": \"manage_semantic\", \"condition\": { \"kind\": \"all_of\", \"conditions\": [ { \"kind\": \"arg_equals\", \"field\": \"operation\", \"value\": \"delete_measure\" }, { \"kind\": \"arg_equals\", \"field\": \"dependency.has_dependents\", \"value\": true } ] }, \"message\": \"Deleting this measure is blocked because it has {arg:dependency.count} downstream dependents.\" } ] }"
+  "data": "{ \"rules\": [ { \"id\": \"deny-dependent-measure-delete\", \"action\": \"deny\", \"tool\": \"manage_semantic\", \"condition\": { \"kind\": \"all_of\", \"conditions\": [ { \"kind\": \"arg_equals\", \"field\": \"operation\", \"value\": \"delete_measure\" }, { \"kind\": \"arg_equals\", \"field\": \"dependency.has_dependents\", \"value\": true } ] }, \"message\": \"Deleting this measure is blocked because it has {arg:dependency.count} downstream dependents: {arg:dependency.sample_summary}.\" } ] }"
 }
 ```
 
