@@ -35,8 +35,9 @@ Related:
 - `MCP_ENGINE_AUDIT_TOOL_ENABLED=true|false` (default: false; tool hidden unless `true`)
 
 Write-path behavior:
-- Write operations are `fail_closed`: the tool result is not considered complete until the audit entry is durably stored.
-- If write audit persistence cannot be confirmed before the timeout, the tool returns `AUDIT_LOG_WRITE_FAILED`.
+- Write operations are `fail_closed`: MCP first durably records a `write_intent` entry, then executes the handler, then records the final `write` outcome.
+- If pre-write intent persistence cannot be confirmed before execution, the tool returns `AUDIT_LOG_WRITE_FAILED` and the write handler is not called.
+- If final write audit persistence fails after handler execution, the tool returns `AUDIT_LOG_WRITE_FAILED`; the underlying write may already be durable, but the pre-write intent remains available for correlation by `request_id`.
 - Read operations remain best-effort when `MCP_ENGINE_AUDIT_INCLUDE_READS=true`; read audit entries may still be dropped under load.
 
 ### Startup export (one-time)
@@ -62,7 +63,7 @@ Lists audit log entries with optional filters and pagination.
 Supported filters:
 - `model_id`
 - `start_date` / `end_date` (ISO-8601)
-- `operation_type`: `"read"` or `"write"`
+- `operation_type`: `"read"`, `"write"`, or `"write_intent"`
 - `include_arguments` (default false)
 
 Pagination:
