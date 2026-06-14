@@ -344,7 +344,7 @@ When `MCP_ENGINE_POLICY_BUNDLE_PATH` is set but the license is Pro or Free:
 ### Bundle Load Failure (Enterprise Tier)
 
 If the bundle file is missing, inaccessible, or contains invalid JSON:
-- All tools are denied except an allowlist: `manage_policy`, `manage_policy_ui`, `manage_license`, `manage_license_ui`, `manage_model_connection`, `manage_model_connection_ui`, `list_model`, `run_query`, `run_query_ui`
+- All tools are denied except an allowlist: `manage_policy`, `manage_policy_ui`, `manage_license`, `manage_license_ui`, `manage_model_connection`, `manage_model_connection_ui`, `list_model`, `run_query`
 - This lockdown prevents model modifications until the admin bundle issue is resolved
 - `bundle_error` field in `manage_policy status` shows the failure reason
 - **No automatic retry**: The server attempts to load the bundle once at first use; a server restart is required after fixing the bundle file
