@@ -11,6 +11,8 @@ This guide explains how to create and manage User-Defined Functions (UDFs) in Po
 
 DAX User-Defined Functions (UDFs) allow you to create reusable function definitions in Power BI semantic models. UDFs require model compatibility level 1702 or higher.
 
+Microsoft documents DAX UDFs as generally available in Power BI Desktop and Power BI Service as of the June 2026 release, including optional parameter default expressions. See Microsoft's [DAX user-defined functions](https://learn.microsoft.com/en-us/dax/best-practices/dax-user-defined-functions) documentation and SQLBI's [optional parameters in DAX user-defined functions](https://www.sqlbi.com/articles/optional-parameters-in-dax-user-defined-functions/) article for syntax and call-site examples.
+
 ## Basic Syntax
 
 A UDF definition consists of:
@@ -80,6 +82,35 @@ Parameters can be evaluated in two modes:
 |------|-------------|----------|
 | VAL | Default. Argument is evaluated at call site before entering function. | Simple calculations where you want the value |
 | EXPR | Raw argument expression is substituted into function body and evaluated in inner context. | Context control with CALCULATE, FILTER, or iteration functions |
+
+### Optional Parameters
+
+You can make a parameter optional by setting `default_expression` on that parameter. SemanticOps renders it in the UDF signature as `= <DefaultExpression>`:
+
+```json
+{
+  "operation": "create_udf",
+  "target": "IncrementLimit",
+  "spec": {
+    "body": "MIN(x + y, limit)",
+    "parameters": [
+      {"name": "x", "subtype": "NUMERIC"},
+      {"name": "y", "subtype": "NUMERIC", "default_expression": "1"},
+      {"name": "limit", "subtype": "NUMERIC", "default_expression": "10"}
+    ]
+  }
+}
+```
+
+This creates a signature equivalent to:
+
+```dax
+(x : NUMERIC, y : NUMERIC = 1, limit : NUMERIC = 10) => MIN(x + y, limit)
+```
+
+Callers can omit trailing optional arguments, for example `IncrementLimit(5)`, or skip an optional argument in the middle with an empty argument position, for example `IncrementLimit(5, , 20)`.
+
+Default expressions can be constants or DAX expressions such as `BLANK()` or `DATE(2026, 1, 1)`. The Power BI engine validates whether the default expression is legal for the parameter type and scope.
 
 ## Tool Usage
 
@@ -351,6 +382,8 @@ Categorize a value based on thresholds.
 
 8. **Hide internal helpers**: Use `is_hidden: true` in spec for utility functions not intended for end users.
 
+9. **Place optional parameters last**: DAX allows required parameters after optional parameters, but that forces callers to use empty argument positions. Prefer making every parameter after the first optional parameter optional as well.
+
 ## Parameter Format Reference
 
 ```json
@@ -358,7 +391,8 @@ Categorize a value based on thresholds.
   "name": "parameterName",
   "type": "ANYVAL | SCALAR | TABLE | ANYREF",
   "subtype": "NUMERIC | STRING | BOOLEAN | DATETIME | INT64 | DECIMAL | DOUBLE | VARIANT",
-  "mode": "VAL | EXPR"
+  "mode": "VAL | EXPR",
+  "default_expression": "DAX expression used when the caller omits this argument"
 }
 ```
 
@@ -366,3 +400,4 @@ Categorize a value based on thresholds.
 - `type`: Optional. If omitted, the parameter is untyped (`ANYVAL`) and the engine infers it. Use TABLE for table inputs, ANYREF for column/measure/table references.
 - `subtype`: Optional. Scalar subtype hint (applies when type is SCALAR, or when type is omitted and you want to hint a scalar subtype).
 - `mode`: Optional. Defaults to VAL. Use EXPR for lazy evaluation with context control.
+- `default_expression`: Optional. DAX expression used when the caller omits the argument; setting this makes the parameter optional.
