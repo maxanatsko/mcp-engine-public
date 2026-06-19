@@ -191,7 +191,7 @@ Cause:
 
 Fix:
 
-1. Run `refresh` with `scope: "Table"` or `scope: "Model"` and `refresh_type: "Calculate"`.
+1. Run `manage_refresh` with `scope: "Table"` or `scope: "Model"` and `refresh_type: "Calculate"`.
 2. Retry the measure validation or DAX query.
 3. If the error persists, inspect the relationship definition and key column types.
 

@@ -7,7 +7,7 @@ This guide covers partition lifecycle operations and safe refresh workflows.
 - `manage_schema`: Create/update/delete/refresh partitions on existing tables (operations: `create_partition`, `update_partition`, `delete_partition`, `refresh_partition`)
 - `manage_schema`: Create tables with an initial partition (`operation: "create_table"`)
 - `list_model`: Inspect partitions (`operation: "list"`, `spec: { type: "partitions", include_expression: true }`)
-- `refresh`: Plan and execute model/table/partition processing, check best-effort live status, inspect Desktop MCP-initiated history, and inspect Power BI Service refresh history/diagnostics
+- `manage_refresh`: Plan and execute model/table/partition processing, check best-effort live status, inspect Desktop MCP-initiated history, and inspect Power BI Service refresh history/diagnostics
 
 ## Partition Types and Inputs
 
@@ -181,12 +181,12 @@ Rules:
 Recommended for production-like models:
 
 1. `list_model` with `operation: "list"`, `spec: { type: "partitions" }` to understand current state.
-2. Use `operation: "plan"` on `refresh` before model/table refreshes.
+2. Use `operation: "plan"` on `manage_refresh` before model/table refreshes.
 3. Apply updates.
 4. `refresh_partition` one partition first.
 5. Validate key visuals/queries before refreshing remaining partitions.
 
-For `refresh` model scope, tables marked `exclude_from_model_refresh` are skipped by default for Desktop and Service/XMLA connections. Use `include_excluded: true` only when you explicitly intend to include them. Targeted table/partition refreshes do not apply this model-scope skip.
+For `manage_refresh` model scope, tables marked `exclude_from_model_refresh` are skipped by default for Desktop and Service/XMLA connections. Use `include_excluded: true` only when you explicitly intend to include them. Targeted table/partition refreshes do not apply this model-scope skip.
 
 ## Bulk Examples
 
@@ -217,9 +217,9 @@ Use `operation="plan"` before Desktop-local refresh execution when you need to i
 
 `operation="status"` is a best-effort DMV probe. It returns `best_effort=true`, `status_source="discover_commands_dmv"`, confidence, and limitations; it is not durable history, a request/job ID, reliable progress tracking, or guaranteed in-progress detection.
 
-For Desktop connections, `operation="history"` returns local MCP-initiated refresh history only. It includes explicit `refresh` executions and automatic post-write refreshes started by `manage_schema` (for example `process=true` or calculated-column materialization), with `trigger_source` identifying the initiator. Schema-triggered refresh history is best-effort/non-audit so schema writes keep their existing success/warning behavior if local history cannot be recorded. It does not include refreshes started in Power BI Desktop or other tools.
+For Desktop connections, `operation="history"` returns local MCP-initiated refresh history only. It includes explicit `manage_refresh` executions and automatic post-write refreshes started by `manage_schema` (for example `process=true` or calculated-column materialization), with `trigger_source` identifying the initiator. Schema-triggered refresh history is best-effort/non-audit so schema writes keep their existing success/warning behavior if local history cannot be recorded. It does not include refreshes started in Power BI Desktop or other tools.
 
-For Service connections, use the read-only `refresh` diagnostics operations when you need operational evidence rather than a new processing request. `details`, `diagnose`, and `reliability` are Power BI Service/XMLA diagnostics operations; Desktop connections should use `history` for local MCP-initiated refresh history and `status` for the best-effort DMV probe.
+For Service connections, use the read-only `manage_refresh` diagnostics operations when you need operational evidence rather than a new processing request. `details`, `diagnose`, and `reliability` are Power BI Service/XMLA diagnostics operations; Desktop connections should use `history` for local MCP-initiated refresh history and `status` for the best-effort DMV probe.
 
 ```json
 { "operation": "history", "limit": 20 }

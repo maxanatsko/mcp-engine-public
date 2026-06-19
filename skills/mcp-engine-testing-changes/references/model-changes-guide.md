@@ -30,7 +30,7 @@ Tracked model-mutating operations:
 | `manage_security` | roles, RLS filters, OLS permissions, perspectives/members | Captures before/after schema and diffs security changes |
 | `manage_localization` | cultures, culture annotations, translations | Captures before/after schema and diffs localization changes |
 | `manage_model_properties` | description, culture, discourage implicit measures, compatibility level, model annotations | Only `operation="update"` is transaction-wrapped |
-| `refresh` | partition, table, model processing | `status_only=true` is not recorded; actual refresh writes create a processing transaction even when schema is unchanged |
+| `manage_refresh` | partition, table, model processing | `status_only=true` is not recorded; actual refresh writes create a processing transaction even when schema is unchanged |
 | `manage_model_changes` | `apply_changeset`, `rollback_transaction`, `restore_checkpoint`, `undo`, `redo` | History operations are traceable and record the restored snapshot or source transaction |
 
 Out of scope for model-change transactions:
@@ -116,7 +116,7 @@ The `full` response includes:
 
 Unchanged objects and raw snapshot previews are omitted.
 
-`refresh` transactions use an explicit processing summary when the schema hash does not change:
+`manage_refresh` transactions use an explicit processing summary when the schema hash does not change:
 
 - `No schema changes; processing operation recorded.`
 
