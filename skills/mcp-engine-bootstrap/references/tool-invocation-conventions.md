@@ -154,7 +154,7 @@ Some `list_model` `operation: "list"` types support lightweight filters:
 - `visibility`: `"all"` (default), `"visible"`, `"hidden"` (applies to types that have `is_hidden`)
 - `is_hidden`: boolean override for `visibility` (when present)
 - Columns: `is_key`: boolean filter (key columns only)
-- Relationships: `active_only` (alias: `is_active`) supports `true` (active only) / `false` (inactive only) / omitted (all)
+- Relationships: `active_only` (alias: `is_active`) supports `true` (active only) / `false` or omitted (all)
 - `include_system_artifacts`: default `false`, which filters internal Power BI artifacts from list results. Set `true` to return raw metadata.
   Filtered artifacts include `LocalDateTable_*`, `DateTableTemplate`, `DateTableTemplate_*`, `RowNumber-*`, `column_type="RowNumber"`, and list items owned by filtered system tables.
 

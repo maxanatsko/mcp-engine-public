@@ -5,7 +5,7 @@ This guide covers relationship modeling best practices and how to apply them wit
 ## Related Tools
 
 - `manage_schema`: Create/update/delete relationships (operations: `create_relationship`, `update_relationship`, `delete_relationship`)
-- `list_model`: Inspect existing relationships (`operation: "list"`, `spec: { type: "relationships", active_only: true|false }`)
+- `list_model`: Inspect existing relationships (`operation: "list"`, `spec: { type: "relationships" }`; add `active_only: true` for active relationships only)
 - `list_model`: Confirm key column data types (`operation: "list"`, `spec: { type: "columns" }`)
 - `run_query`: Validate filter propagation scenarios (`operation: "execute"`)
 
