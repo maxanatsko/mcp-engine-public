@@ -98,6 +98,50 @@ The Tauri test runner uses `runs_list` to hydrate persisted run history for the 
 
 ## Creating Tests
 
+### Single create/update and validate shapes
+
+Single-test `put` and `validate` accept the canonical nested test-definition shape:
+
+```json
+{
+  "operation": "put",
+  "spec": {
+    "id": "total-sales-positive",
+    "name": "Total Sales is positive",
+    "type": "measure_assertion",
+    "spec": { "measure": "Sales[Total Sales]" },
+    "assert": { "kind": "scalar", "op": "gt", "expected": { "type": "number", "value": 0 } },
+    "context": {
+      "filters": [
+        { "table": "Date", "column": "Year", "op": "eq", "values": [{ "type": "number", "value": 2026 }] }
+      ]
+    }
+  }
+}
+```
+
+They also accept the advertised peer shape, where `assert` and `context` sit beside the root `spec` argument:
+
+```json
+{
+  "operation": "validate",
+  "spec": {
+    "id": "total-sales-positive",
+    "name": "Total Sales is positive",
+    "type": "measure_assertion",
+    "spec": { "measure": "Sales[Total Sales]" }
+  },
+  "assert": { "kind": "scalar", "op": "gt", "expected": { "type": "number", "value": 0 } },
+  "context": {
+    "filters": [
+      { "table": "Date", "column": "Year", "op": "eq", "values": [{ "type": "number", "value": 2026 }] }
+    ]
+  }
+}
+```
+
+Do not provide both nested `spec.assert`/`spec.context` and root peer `assert`/`context` in the same call. The server rejects conflicting shapes instead of choosing silently. Type-specific fields remain nested under the inner test-definition `spec`; for example use `spec.spec.measure` in the MCP argument envelope for `measure_assertion`, not root-level `measure`.
+
 ### Bulk create/delete (items)
 
 `put` and `delete` support bulk via an `items` array (similar to other `manage_*` tools):
