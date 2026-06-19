@@ -215,7 +215,7 @@ Use `operation="plan"` before Desktop-local refresh execution when you need to i
 }
 ```
 
-`operation="status"` is a best-effort DMV probe. It returns `best_effort=true`, `status_source="discover_commands_dmv"`, confidence, and limitations; it is not durable history, a request/job ID, reliable progress tracking, or guaranteed in-progress detection.
+`operation="status"` is a best-effort DMV probe. It defaults to model scope when `scope` is omitted, so `{ "operation": "status" }` is valid. It returns `best_effort=true`, `status_source="discover_commands_dmv"`, confidence, and limitations; it is not durable history, a request/job ID, reliable progress tracking, or guaranteed in-progress detection.
 
 For Desktop connections, `operation="history"` returns local MCP-initiated refresh history only. It includes explicit `manage_refresh` executions and automatic post-write refreshes started by `manage_schema` (for example `process=true` or calculated-column materialization), with `trigger_source` identifying the initiator. Schema-triggered refresh history is best-effort/non-audit so schema writes keep their existing success/warning behavior if local history cannot be recorded. It does not include refreshes started in Power BI Desktop or other tools.
 
