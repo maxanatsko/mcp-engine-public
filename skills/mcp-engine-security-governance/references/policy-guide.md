@@ -171,7 +171,10 @@ Example (JSON-in-string inspection through synthetic parsed fields):
 |---------|---------|
 | `safe-authoring-baseline` | Confirm renames, confirm M2M relationship creation, protect risky partition updates |
 | `semantic-quality` | Require measure description, format, and display folder; block explicit display-folder clears |
-| `destructive-change-protection` | Apply dependency-aware delete protection for supported object deletes and keep static blocking for unsupported destructive operations |
+| `delete-operation-denials` | Block delete and remove operations regardless of dependency impact |
+| `dependent-delete-denials` | Block supported non-table deletes when downstream dependents exist |
+| `table-delete-impact-review` | Require confirmation or deny table deletes based on dependency blast radius |
+| `unsupported-operation-denials` | Block unsupported destructive operations that do not yet have dependency modeling |
 | `masking-settings-approval` | Require confirmation before changing masking-related runtime settings through `manage_preferences` |
 | `security-hardening` | Block role/perspective deletion and confirm security rule changes |
 | `refresh-and-partition-safety` | Block refresh execution and partition refresh operations |
@@ -182,13 +185,22 @@ Example (JSON-in-string inspection through synthetic parsed fields):
 - `manage_preferences` `action="reset"` for `resource="setting"` and `resource="all"`
 - `manage_preferences` `action="import"` when the import payload includes masking setting IDs
 
-`destructive-change-protection` covers:
+`delete-operation-denials` covers:
+- Broad delete denial rules for `manage_semantic`, `manage_schema`, `manage_security`, and `manage_localization`
+- Schema remove operations, because those are destructive model changes
+
+`dependent-delete-denials` covers:
 - Dependency-aware delete rules for `manage_semantic` `delete_measure`, `delete_kpi`, `delete_calc_group`, `delete_udf`, `delete_named_expression`
-- Dependency-aware delete rules for `manage_schema` `delete_table`, `delete_partition`, `delete_column`, `delete_calc_column`, `delete_relationship`, `delete_hierarchy`, `delete_calendar`
+- Dependency-aware delete rules for `manage_schema` `delete_partition`, `delete_column`, `delete_calc_column`, `delete_relationship`, `delete_hierarchy`, `delete_calendar`
 - Dependency-aware delete rules for `manage_security` `delete_role`, `delete_perspective`
 - Dependency-aware delete rules for `manage_localization` `delete_culture`
+
+`table-delete-impact-review` covers:
+- Table deletes with severe blast radius are denied
+- Table deletes with smaller but non-zero blast radius require confirmation
+
+`unsupported-operation-denials` covers:
 - Static fallback deny rules for unsupported destructive operations: `manage_semantic` `delete_pq_parameter`, `manage_schema` `remove_time_unit`, `manage_schema` `remove_related_group`
-- Table deletes are impact-aware: severe blast radius is denied, smaller but non-zero blast radius requires confirmation
 
 ### List Rules (Paginated)
 

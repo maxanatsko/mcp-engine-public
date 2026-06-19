@@ -19,7 +19,10 @@ Available pack IDs:
 
 - `safe-authoring-baseline`: confirmation and safety rails for common authoring mistakes.
 - `semantic-quality`: semantic model quality guardrails.
-- `destructive-change-protection`: impact-aware protection for destructive deletes and unsupported destructive operations.
+- `delete-operation-denials`: blocks delete and remove operations regardless of dependency impact.
+- `dependent-delete-denials`: blocks supported non-table deletes when downstream dependents exist.
+- `table-delete-impact-review`: requires confirmation or denies table deletes based on dependency blast radius.
+- `unsupported-operation-denials`: blocks unsupported destructive operations that do not yet have dependency modeling.
 - `masking-settings-approval`: requires confirmation before masking preference changes.
 - `security-hardening`: guardrails for role and perspective changes.
 - `refresh-and-partition-safety`: blocks broad refresh execution and partition refresh paths.
@@ -34,7 +37,8 @@ For confirm-heavy solo or developer setup:
 
 For deny destructive operations:
 
-- Use `destructive-change-protection`.
+- Use `delete-operation-denials` when deletions should be blocked outright.
+- Use `dependent-delete-denials`, `table-delete-impact-review`, and `unsupported-operation-denials` when deletes should remain possible with scoped impact-aware protection.
 - Add `refresh-and-partition-safety` when refresh or partition operations are not part of the approved workflow.
 - Add `security-hardening` for roles, OLS, RLS, perspectives, or team-admin settings.
 
@@ -42,12 +46,13 @@ For consultant/client work:
 
 - Start with previews only.
 - Prefer `masking-settings-approval` and `safe-authoring-baseline`.
-- Apply `destructive-change-protection` only after confirming the client accepts server-side blocks.
+- Apply `delete-operation-denials`, `dependent-delete-denials`, `table-delete-impact-review`, or `unsupported-operation-denials` only after confirming the client accepts server-side blocks.
 
 For team/admin governance:
 
 - Prefer deny-style rules for high-risk operations.
-- Use `security-hardening`, `destructive-change-protection`, and `refresh-and-partition-safety`.
+- Use `security-hardening`, `delete-operation-denials`, and `refresh-and-partition-safety` for the strictest local guardrails.
+- Use `dependent-delete-denials`, `table-delete-impact-review`, and `unsupported-operation-denials` when deletion workflows must remain available under scoped protection.
 - Keep Enterprise-only policy bundle or audit recommendations separate from local Pro policy packs.
 
 ## Custom Rules

@@ -30,7 +30,8 @@ Recommend:
 
 - Full mode for local development with explicit checkpoints and validation.
 - `safe-authoring-baseline` for confirmation rails.
-- `destructive-change-protection` when deleting or renaming model objects is possible.
+- `delete-operation-denials` when deleting model objects should be blocked outright.
+- `dependent-delete-denials`, `table-delete-impact-review`, and `unsupported-operation-denials` when deletes should remain possible under scoped protection.
 - `semantic-quality` for semantic model quality guardrails.
 - `metadata-quality`, `referential-integrity`, `relationship-governance`, and `time-intelligence` test packs depending on model features.
 - Use `mcp-engine-testing-changes` before broad refactors and `mcp-engine-semantic-authoring` or `mcp-engine-schema-authoring` for authoring workflows.
@@ -48,7 +49,8 @@ Recommend:
 - Read-only or browse-only until the client approves write scope.
 - Treat data as sensitive by default.
 - Prefer global preferences for portable limits and masking, with model scope only when a specific client model is approved.
-- `masking-settings-approval`, `safe-authoring-baseline`, and `destructive-change-protection` when write access is enabled.
+- `masking-settings-approval`, `safe-authoring-baseline`, and `delete-operation-denials` when write access is enabled but deletes are not approved.
+- Use `dependent-delete-denials`, `table-delete-impact-review`, and `unsupported-operation-denials` instead when the client approves deletion workflows with scoped guardrails.
 - `documentation-baseline`, `metadata-quality`, and `presentation-hygiene` test packs for handoff quality.
 - Keep final playbook explicit about what was changed, what was only recommended, and what needs client approval.
 
@@ -64,7 +66,7 @@ Recommend:
 - Read-only as the default shared posture; full mode only for trusted maintainers.
 - Browse-only for broad discovery or support users.
 - Separate local Pro recommendations from Enterprise/org-managed policy or audit expectations.
-- `security-hardening`, `refresh-and-partition-safety`, `destructive-change-protection`, and `masking-settings-approval`.
+- `security-hardening`, `refresh-and-partition-safety`, `delete-operation-denials`, and `masking-settings-approval`.
 - `documentation-baseline`, `relationship-governance`, `referential-integrity`, and security validation starter tests when roles or OLS are present.
 - Use `mcp-engine-security-governance` and `mcp-engine-testing-changes` as follow-up skills.
 
