@@ -46,7 +46,11 @@ DAX UDFs support these parameter types:
 | ANYVAL | No explicit type hint (engine infers). This is the default when you omit `type` and `subtype`. | Flexible inputs when you don't want to constrain the caller |
 | SCALAR | A single value (number, text, date/time, boolean) | Most calculations |
 | TABLE | A DAX table expression | Working with datasets |
-| ANYREF | A direct reference to a model object without pre-evaluation | Passing columns/measures to functions like CALCULATE |
+| ANYREF | Any unevaluated reference/expression; always expression-passed | Flexible reference/expression parameters when stricter reference types do not fit |
+| MEASUREREF | A measure reference from the semantic model | Parameters that must be measures |
+| COLUMNREF | A model column reference | Model-independent functions that operate on caller-supplied columns |
+| TABLEREF | A model table reference | Functions that require an actual model table, not a derived table expression |
+| CALENDARREF | A model calendar reference | Calendar-based time intelligence functions |
 
 ### Scalar Subtypes
 
@@ -65,14 +69,15 @@ When using `SCALAR` type, you can optionally specify a subtype:
 
 **Note**: `BLANK()` is valid for any subtype.
 
-### AnyRef Type
+### Reference Types
 
-Use `ANYREF` when you need a direct reference to a model object rather than its evaluated value. This is useful for functions that need to pass references to functions like CALCULATE, TREATAS, or SAMEPERIODLASTYEAR.
+Use reference types when you need an unevaluated model reference or expression rather than an already evaluated value. `ANYREF` is the most permissive option. Prefer the more specific `MEASUREREF`, `COLUMNREF`, `TABLEREF`, or `CALENDARREF` type when the function requires that kind of model object; the engine and authoring tools can validate the call site more clearly.
 
 Allowed reference forms:
 - Column reference: `'Table'[Column]`
 - Table reference: `'Table'`
 - Measure reference: `[Measure]`
+- Calendar reference: `'Calendar'`
 
 ### Parameter Modes
 
@@ -144,6 +149,27 @@ Default expressions can be constants or DAX expressions such as `BLANK()` or `DA
   }
 }
 ```
+
+### Creating with a Full Signature Body
+
+The recommended tool shape is to put parameters in `spec.parameters` and the DAX expression in `spec.body`. If you already have a complete UDF signature from DAX Query View or TMDL, you can provide the signature in `spec.body` without `spec.parameters`:
+
+```json
+{
+  "operation": "create_udf",
+  "target": "AddTax",
+  "spec": {
+    "body": "(amount : NUMERIC, taxRate : NUMERIC = 0.1) => amount * (1 + taxRate)",
+    "description": "Add tax to an amount"
+  }
+}
+```
+
+`FUNCTION AddTax = (...) => ...` and TMDL-style `function AddTax = (...) => ...` inputs are also accepted and normalized to the stored `(...) => ...` expression. Do not also supply `spec.parameters` when `spec.body` already contains a full signature.
+
+### Validation Results
+
+`create_udf` and `update_udf` return a top-level `validation` object with `ok`, `state`, and `error_message` from TOM after the write. If Power BI saves the UDF but reports a non-ready state or an error message, the tool returns an error result and includes `saved_udf` so you can inspect the persisted object before retrying. Recoverable save anomalies can also appear as `warnings` alongside the validation payload.
 
 ### Creating with AnyRef Parameter
 
@@ -370,7 +396,7 @@ Categorize a value based on thresholds.
    - Use `VAL` (default) when you want the argument evaluated once at call time
    - Use `EXPR` when you need the expression to be evaluated in the function's context (e.g., inside CALCULATE)
 
-3. **Use ANYREF for references**: When passing columns, tables, or measures to DAX functions that expect references, use `ANYREF`.
+3. **Prefer specific reference types when possible**: Use `MEASUREREF`, `COLUMNREF`, `TABLEREF`, or `CALENDARREF` when the function requires that specific kind of model object. Reserve `ANYREF` for parameters that genuinely accept multiple reference/expression forms.
 
 4. **Document your functions**: Include clear descriptions via the `description` parameter in spec.
 
@@ -389,7 +415,7 @@ Categorize a value based on thresholds.
 ```json
 {
   "name": "parameterName",
-  "type": "ANYVAL | SCALAR | TABLE | ANYREF",
+  "type": "ANYVAL | SCALAR | TABLE | ANYREF | MEASUREREF | COLUMNREF | TABLEREF | CALENDARREF",
   "subtype": "NUMERIC | STRING | BOOLEAN | DATETIME | INT64 | DECIMAL | DOUBLE | VARIANT",
   "mode": "VAL | EXPR",
   "default_expression": "DAX expression used when the caller omits this argument"
@@ -397,7 +423,7 @@ Categorize a value based on thresholds.
 ```
 
 - `name`: Required. The parameter name used in the function body.
-- `type`: Optional. If omitted, the parameter is untyped (`ANYVAL`) and the engine infers it. Use TABLE for table inputs, ANYREF for column/measure/table references.
+- `type`: Optional. If omitted, the parameter is untyped (`ANYVAL`) and the engine infers it. Use TABLE for table inputs, ANYREF for flexible expression/reference inputs, and MEASUREREF/COLUMNREF/TABLEREF/CALENDARREF for stricter model-reference inputs.
 - `subtype`: Optional. Scalar subtype hint (applies when type is SCALAR, or when type is omitted and you want to hint a scalar subtype).
 - `mode`: Optional. Defaults to VAL. Use EXPR for lazy evaluation with context control.
 - `default_expression`: Optional. DAX expression used when the caller omits the argument; setting this makes the parameter optional.
