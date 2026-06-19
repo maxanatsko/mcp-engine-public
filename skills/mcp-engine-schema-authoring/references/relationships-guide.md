@@ -16,7 +16,7 @@ This guide covers relationship modeling best practices and how to apply them wit
 - Canonical cardinality fields are `from_cardinality` and `to_cardinality`, each with values `Many` or `One`.
 - Default cardinalities are typically `Many` (from) to `One` (to).
 - `cardinality` is accepted as a create-only shorthand alias for `ManyToOne`, `OneToMany`, `OneToOne`, or `ManyToMany`.
-- `cross_filter_direction` is the write-spec field; `crossfilter_direction` is also accepted when copying relationship rows from `list_model`.
+- `cross_filter_direction` is the write-spec field and the field returned by `list_model` relationship rows.
 
 ## Create a Relationship
 
