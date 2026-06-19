@@ -159,7 +159,7 @@ Example (`manage_schema` create partition):
 ## Common Pitfalls
 
 - `expression_kind="named"` is only valid for `partition_type="M"`.
-- M named-expression and M partition writes on Desktop return `desktop_sync_pending=true`; accept Desktop's external changes with `Discard` if prompted, then reload MCP before continuing other operations (non-M write tools are blocked until reload verification succeeds). If multiple M changes were made before reload, responses include `desktop_sync_items[]`.
+- M named-expression and M partition writes on Desktop return `desktop_sync_pending=true`. On June 2026+ Power BI Desktop, M/TOM changes are reflected immediately and silently with no Desktop action needed. Older Desktop versions may still show an external-changes banner; only if prompted, click `Discard` to accept MCP's external changes and do not click `Apply`. You may continue additional M changes, but in all Desktop versions reload MCP before continuing non-M operations (non-M write tools are blocked until reload verification succeeds). If multiple M changes were made before reload, responses include `desktop_sync_items[]`.
 - `query_group` and `clear_query_group=true` are mutually exclusive in the same update request.
 - `query_group` cannot be empty; to remove a group use `clear_query_group=true`.
 - Assigning/clearing query groups on named expressions requires model compatibility level 1480+.

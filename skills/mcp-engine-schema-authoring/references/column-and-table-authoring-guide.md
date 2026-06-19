@@ -70,7 +70,7 @@ Optional formatting:
 
 `query_group` applies only to M partitions. To change/remove group later, use `manage_schema` `update_partition` with `spec.query_group` or `spec.clear_query_group=true`.
 
-Desktop M writes require a sync step. If Power BI Desktop shows the external changes banner after an M table or partition write, click `Discard` to accept MCP's external changes, then call `manage_model_connection` with `operation="reload"` before continuing.
+Desktop M writes require MCP-side verification. On June 2026+ Power BI Desktop, M/TOM changes are reflected immediately and silently with no Desktop action needed. Older Desktop versions may still show an external-changes banner; only if prompted, click `Discard` to accept MCP's external changes and do not click `Apply`. In all Desktop versions, call `manage_model_connection` with `operation="reload"` before continuing non-M operations.
 
 **Processing options:**
 - `process`: When `true`, refreshes the table after creation (loads data)

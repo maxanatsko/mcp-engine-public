@@ -125,7 +125,7 @@ Notes:
 }
 ```
 
-After any M partition write on Desktop, responses include `requires_desktop_sync` / `desktop_sync_pending`. If Power BI Desktop shows the external changes banner, click `Discard` to accept MCP's external changes into the open PBIX, then call `manage_model_connection` with `operation="reload"` before continuing other operations (non-M write tools are blocked until reload verification succeeds). If multiple M changes were made before reload, responses include `desktop_sync_items[]`.
+After any M partition write on Desktop, responses include `requires_desktop_sync` / `desktop_sync_pending`. On June 2026+ Power BI Desktop, M/TOM changes are reflected immediately and silently with no Desktop action needed. Older Desktop versions may still show an external-changes banner; only if prompted, click `Discard` to accept MCP's external changes and do not click `Apply`. You may continue additional M changes, but in all Desktop versions call `manage_model_connection` with `operation="reload"` before continuing non-M operations (non-M write tools are blocked until reload verification succeeds). If multiple M changes were made before reload, responses include `desktop_sync_items[]`.
 
 ## Assign / Clear Query Group
 
