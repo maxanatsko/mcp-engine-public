@@ -132,7 +132,8 @@ Guidance:
 
 - Prefer rolling back to a pinned checkpoint for intentional restore points.
 - Always validate critical measures and visuals after a rollback.
-- Rollback requires confirmation. If the client doesn't support elicitation, re-run with `confirm=true`:
+- Rollback requires confirmation. If the client doesn't support elicitation, re-run with `confirm=true`.
+  The `confirm` flag is only a compatibility fallback for clients without elicitation; it does not bypass a client-advertised confirmation prompt.
 
 ```json
 { "operation": "rollback_transaction", "transaction_id": "txn_abc123", "confirm": true }
@@ -185,6 +186,7 @@ Notes:
 - Undo requires that the transaction has a captured `before_snapshot_id` (auto-snapshot).
 - Undo creates a redo snapshot of the current model state before restoring the "before" snapshot.
 - Undo/redo operations require confirmation. If the client doesn't support elicitation, re-run with `confirm=true`.
+- If a client advertises elicitation but the confirmation prompt cannot be completed, the operation fails closed rather than trusting model-supplied arguments.
 
 ### Redo
 
@@ -229,6 +231,7 @@ If the client doesn't support elicitation:
 ### Delete a checkpoint
 
 Deleting a checkpoint requires confirmation. If the client doesn't support elicitation, re-run with `confirm=true`.
+If a client advertises elicitation, the prompt must complete successfully; `confirm=true` is not a security boundary and does not override a failed prompt.
 
 ```json
 { "operation": "delete_checkpoint", "checkpoint_id": "snap_xyz789" }
