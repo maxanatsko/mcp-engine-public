@@ -58,6 +58,7 @@ After creating a relationship:
 
 - If you immediately validate a measure that uses `RELATED()`, `USERELATIONSHIP`, or new filter propagation, a `Calculate` refresh may still be required.
 - When in doubt, run a `Calculate` refresh on the affected table or model before treating the validation error as a DAX bug.
+- Relationship endpoints must be materialized columns. SemanticOps rejects calculated columns with `expression_context: "user_context"` because they are evaluated at query time; use a source column or standard calculated column instead.
 
 ## Cross-filter Direction
 
@@ -88,6 +89,7 @@ A **weak relationship** occurs when the "one" side column does not contain uniqu
 **Common causes:**
 - Many-to-many relationships without a proper bridge table
 - Joining on calculated columns
+- Joining on user-context calculated columns (not supported)
 - Data quality issues (duplicates in dimension key)
 
 **Fixes:**

@@ -55,7 +55,7 @@ Typical workflow:
 ## 4) Measures vs Calculated Columns
 
 - Prefer measures for aggregations and business KPIs (evaluated at query time).
-- Use calculated columns only when you need persisted row-level attributes (they often increase model size).
+- Use standard calculated columns only when you need materialized row-level attributes (they often increase model size). User-context calculated columns are virtual/query-time and should be reserved for user-aware localization/security scenarios or simple expressions where query-time evaluation is acceptable.
 - Avoid “calculated columns that replicate dimension attributes” on fact tables unless necessary.
 
 Refactoring tip:

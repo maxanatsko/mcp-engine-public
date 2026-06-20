@@ -13,7 +13,7 @@ This guide explains common patterns for creating, updating, and refactoring meas
 ## When to Use a Measure vs a Calculated Column
 
 - Prefer **measures** for aggregations, ratios, and time intelligence (evaluated at query time).
-- Prefer **calculated columns** (via `manage_schema` with `operation: "create_calc_column"`) when you need a row-level attribute persisted in the model (often increases model size).
+- Prefer **standard calculated columns** (via `manage_schema` with `operation: "create_calc_column"`) when you need a row-level attribute materialized in the model (often increases model size). Use `expression_context: "user_context"` only when the value must be virtual/query-time and depend on user identity, culture, or security context.
 
 ## Create a Measure
 
