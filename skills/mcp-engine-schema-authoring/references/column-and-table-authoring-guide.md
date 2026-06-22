@@ -289,7 +289,7 @@ Do not rely on top-level `table` or `target` being copied into `items[]`.
 
 Calculated-column writes default to `expression_context: "standard"` and automatically attempt a `Calculate` refresh for the owning table after save. Responses include `processed`, `expression_context`, and may include warnings plus a `next_action` refresh hint when the host defers or rejects inline calculation.
 
-Use `expression_context: "user_context"` only when the column must evaluate at query time under the current user's security/culture context, for example with `USERCULTURE()`, `USERPRINCIPALNAME()`, `USEROBJECTID()`, `USERNAME()`, or `CUSTOMDATA()`. User-context calculated columns are virtual/unmaterialized, so SemanticOps skips the automatic table `Calculate` refresh and returns a warning instead of a refresh next action.
+Use `expression_context: "user_context"` only when the column must evaluate at query time under the current user's security/culture context, for example with `USERCULTURE()`, `USERPRINCIPALNAME()`, `USEROBJECTID()`, `USERNAME()`, or `CUSTOMDATA()`. User-context calculated-column values are virtual/unmaterialized, but SemanticOps still attempts the same table `Calculate` refresh after save so the column is registered and queryable. If the model is below compatibility level 1705, retry with `allow_compatibility_upgrade: true` only after acknowledging that the compatibility-level upgrade is irreversible.
 
 ### Create
 
@@ -308,7 +308,7 @@ Use `expression_context: "user_context"` only when the column must evaluate at q
 
 Notes:
 - `create_calc_column` infers the column data type from the DAX expression. `spec.data_type` is not supported.
-- Allowed create fields are `expression`, `description`, `is_hidden`, `format_string`, `data_category`, `display_folder`, `summarize_by`, `sort_by`, `expression_context`, and `format_dax`.
+- Allowed create fields are `expression`, `description`, `is_hidden`, `format_string`, `data_category`, `display_folder`, `summarize_by`, `sort_by`, `expression_context`, `allow_compatibility_upgrade`, and `format_dax`.
 - `expression_context` accepts only `standard` or `user_context`. Omit it for the historical standard/materialized behavior.
 - User-context calculated columns cannot be relationship endpoints and cannot be referenced directly or indirectly by standard calculated columns, calculated tables, or RLS expressions.
 - For localization slicers, prefer pairing user-context display columns with stable sort/group-by columns so selections are not stored as translated strings.
@@ -328,6 +328,8 @@ Notes:
 ```
 
 Changing `expression_context` changes materialization semantics. Use `standard` when a column participates in relationships or when refresh-time materialization is required for performance. Use `user_context` when the value depends on user identity/culture or when a simple row-level expression should remain virtual and query-time evaluated.
+
+When changing to `user_context` on a model below compatibility level 1705, include `allow_compatibility_upgrade: true` only when the irreversible compatibility upgrade is intended.
 
 ### Delete
 
