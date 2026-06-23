@@ -134,7 +134,7 @@ Partial updates:
 
 ## Read / Delete
 
-Read returns `parameter_meta.suggested_values_mode = "list"` for both MCP-authored `AllowedValues={...}` and native Power BI Desktop `List={...}` parameters. Query-backed `AllowedValues=Record.Field(#shared, "...")` returns `"query"` plus `suggested_values_query`.
+Read returns `parameter_meta.suggested_values_mode = "list"` plus `parameter_meta.suggested_values` for finite list suggestions from both MCP-authored `AllowedValues={...}` and native Power BI Desktop `List={...}` parameters. Query-backed `AllowedValues=Record.Field(#shared, "...")` returns `"query"` plus `suggested_values_query`.
 
 Read:
 
