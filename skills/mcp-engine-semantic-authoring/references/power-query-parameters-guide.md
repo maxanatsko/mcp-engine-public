@@ -56,7 +56,7 @@ Notes:
 
 ## Suggested Values
 
-Power Query parameters can provide dropdown suggestions via `AllowedValues` metadata.
+Power Query parameters can provide dropdown suggestions via metadata. MCP writes `AllowedValues`; native Power BI Desktop parameters may use the equivalent `List` field.
 
 ### Any value (default)
 
@@ -108,11 +108,11 @@ Then reference that list query in the parameter.
 
 Update is patch-style: provide `target` plus only the fields you want to change. `current_value` is optional.
 
-If you only change `current_value` (and omit `type` / `required` / `suggested_values`), the server preserves the existing `meta [...]` block (including `AllowedValues`).
+If you only change `current_value` (and omit `type` / `required` / `suggested_values`), the server preserves the existing `meta [...]` block (including `AllowedValues` or native `List`).
 
-If you change `type` and/or `required` without `current_value` (and omit `suggested_values`), the server preserves the existing value expression and existing `AllowedValues` / other `meta [...]` fields when possible.
+If you change `type` and/or `required` without `current_value` (and omit `suggested_values`), the server preserves the existing value expression, existing suggestion metadata (`AllowedValues` or native `List`), and other `meta [...]` fields when possible.
 
-If you provide `suggested_values`, the server replaces `AllowedValues` to match your request and preserves the existing value expression unless you also provide `current_value`.
+If you provide `suggested_values`, the server replaces suggestion metadata to match your request, normalizing native `List` to `AllowedValues`, and preserves the existing value expression unless you also provide `current_value`.
 
 ```json
 {
@@ -126,13 +126,15 @@ If you provide `suggested_values`, the server replaces `AllowedValues` to match 
 
 Partial updates:
 
-- If you supply `suggested_values`, the server **replaces** `AllowedValues` to match your request.
-- If you supply `type` and/or `required` without `current_value` (and omit `suggested_values`), the server **updates only** `Type` / `IsParameterQueryRequired` and preserves the existing value expression plus the rest of the existing `meta [...]` record (including `AllowedValues`).
-  - Note: the server does **not** validate or coerce existing `AllowedValues` when you change `type`. If you change the type, consider also updating `suggested_values` (or set `suggested_values: { mode: "any" }`) to avoid type-incompatible suggestions in the UI.
+- If you supply `suggested_values`, the server **replaces** suggestion metadata to match your request. Native Power BI Desktop `List` metadata is removed and normalized to `AllowedValues` when finite or query-based suggestions remain.
+- If you supply `type` and/or `required` without `current_value` (and omit `suggested_values`), the server **updates only** `Type` / `IsParameterQueryRequired` and preserves the existing value expression plus the rest of the existing `meta [...]` record (including `AllowedValues` or native `List`).
+  - Note: the server does **not** validate or coerce existing `AllowedValues` / `List` values when you change `type`. If you change the type, consider also updating `suggested_values` (or set `suggested_values: { mode: "any" }`) to avoid type-incompatible suggestions in the UI.
 - If you provide only `new_name`, `description`, `query_group`, or `clear_query_group`, the value expression and parameter metadata are preserved.
 - A no-op update, including only `allow_compatibility_upgrade`, is rejected.
 
 ## Read / Delete
+
+Read returns `parameter_meta.suggested_values_mode = "list"` for both MCP-authored `AllowedValues={...}` and native Power BI Desktop `List={...}` parameters. Query-backed `AllowedValues=Record.Field(#shared, "...")` returns `"query"` plus `suggested_values_query`.
 
 Read:
 
