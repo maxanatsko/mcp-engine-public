@@ -70,6 +70,22 @@ Configuration:
 - Set `MCP_ENGINE_EXTERNAL_CHANGE_AUTO_RELOAD=true` to automatically reload without prompting.
 - Set `MCP_ENGINE_EXTERNAL_CHANGE_FAIL_CLOSED=false` to allow operations on stale metadata.
 
+## Confirmation Prompts Are Disabled
+
+Cause:
+
+- `MCP_ENGINE_DISABLE_ELICITATION=true` disables interactive MCP elicitation prompts for the server process.
+
+Impact:
+
+- Operations with explicit non-interactive fallbacks may ask you to re-run with `confirm=true`.
+- Prompt-only destructive/admin operations remain blocked.
+- Policy `require_confirm` rules behave like an unsupported client. Use `MCP_ENGINE_POLICY_CONFIRMATION_UNSUPPORTED=deny` when disabled prompts should fail closed.
+
+Fix:
+
+- Unset `MCP_ENGINE_DISABLE_ELICITATION`, set it to `false`, or use the documented `confirm=true` fallback for operations that support it.
+
 ## Argument Shape and Naming Issues
 
 ### “Unknown property” / “missing required field”

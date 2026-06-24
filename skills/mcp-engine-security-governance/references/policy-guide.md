@@ -14,6 +14,8 @@ Important:
 - Use `deny` for high-risk operations that must be blocked reliably.
 - Treat `require_confirm` as a best-effort UX behavior, not a portable compliance control.
 - MCP hosts may not support elicitation/confirmation consistently enough for server-side enforcement.
+- `MCP_ENGINE_DISABLE_ELICITATION=true` disables interactive confirmation prompts for the process and makes policy confirmation behave like an unsupported client.
+- For locked-down deployments that disable elicitation, also set `MCP_ENGINE_POLICY_CONFIRMATION_UNSUPPORTED=deny` if `require_confirm` rules must fail closed instead of proceeding.
 - Local/user-authored `deny` rules cannot target `manage_policy` or `manage_policy_ui`. Use `require_confirm` for policy approval workflows.
 - Admin lockdown of policy changes comes from bundle/config controls, not ordinary local policy rules.
 

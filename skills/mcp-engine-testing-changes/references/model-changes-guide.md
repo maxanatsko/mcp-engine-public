@@ -39,7 +39,7 @@ Out of scope for model-change transactions:
 
 ## Operations Requiring Confirmation
 
-These operations require interactive confirmation. If the client does not support elicitation, pass `confirm=true`:
+These operations require confirmation. If the client does not support elicitation, or if `MCP_ENGINE_DISABLE_ELICITATION=true` disables prompts for the process, pass `confirm=true`:
 
 - `rollback_transaction`
 - `restore_checkpoint`
@@ -185,7 +185,7 @@ Notes:
 
 - Undo requires that the transaction has a captured `before_snapshot_id` (auto-snapshot).
 - Undo creates a redo snapshot of the current model state before restoring the "before" snapshot.
-- Undo/redo operations require confirmation. If the client doesn't support elicitation, re-run with `confirm=true`.
+- Undo/redo operations require confirmation. If the client doesn't support elicitation or prompts are disabled by `MCP_ENGINE_DISABLE_ELICITATION=true`, re-run with `confirm=true`.
 - If a client advertises elicitation but the confirmation prompt cannot be completed, the operation fails closed rather than trusting model-supplied arguments.
 
 ### Redo
@@ -230,7 +230,7 @@ If the client doesn't support elicitation:
 
 ### Delete a checkpoint
 
-Deleting a checkpoint requires confirmation. If the client doesn't support elicitation, re-run with `confirm=true`.
+Deleting a checkpoint requires confirmation. If the client doesn't support elicitation or prompts are disabled by `MCP_ENGINE_DISABLE_ELICITATION=true`, re-run with `confirm=true`.
 If a client advertises elicitation, the prompt must complete successfully; `confirm=true` is not a security boundary and does not override a failed prompt.
 
 ```json

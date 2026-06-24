@@ -84,5 +84,5 @@ Notes:
 
 - Only upgrades are attempted; downgrades are not supported.
 - Upgrades may trigger a confirmation prompt (elicitation) and may be blocked by the host.
-- If the client cannot show confirmation prompts, send `"confirm": true` with the request or the server will reject the upgrade.
+- If the client cannot show confirmation prompts, or if `MCP_ENGINE_DISABLE_ELICITATION=true` disables prompts for the process, send `"confirm": true` with the request or the server will reject the upgrade.
 - Keep a backup of the PBIX before upgrades.
