@@ -1,10 +1,10 @@
-# Unit Testing Guide (`manage_tests`) (Pro)
+# Unit Testing Guide (`manage_tests`)
 
 This guide explains how to use the Pro Unit Testing feature to create, run, and manage tests for Power BI semantic models.
 
 ## Related Tools
 
-- `manage_tests` (Pro): Create/run/export/transfer tests (14 operations)
+- `manage_tests`: Pro feature for creating, running, exporting, and transferring tests (14 operations)
 - `list_model`: Inspect model schema for test targets (`operation: "list"`)
 - `run_query`: Validate DAX queries before using in tests (`operation: "execute"`)
 - `manage_model_connection`: Connect to a model before running tests

@@ -1,4 +1,4 @@
-# DAX Query Plan Operator Reference (Pro)
+# DAX Query Plan Operator Reference
 
 This reference describes operators and patterns found in DAX query plans captured by the `run_query` tool with `operation: "analyze"` (Pro feature).
 

@@ -1,4 +1,4 @@
-# Policy Guide (Pro)
+# Policy Guide
 
 This guide covers policies for tool execution guardrails.
 

@@ -1,4 +1,4 @@
-# Performance Remediation Playbook (Pro)
+# Performance Remediation Playbook
 
 This is a practical “symptom → diagnosis → tool → fix” guide for Power BI model performance. Use it when a report is slow, a visual times out, or refresh/performance regressions appear after changes.
 
@@ -8,9 +8,9 @@ This is a practical “symptom → diagnosis → tool → fix” guide for Power
 - `run_query` with `operation: "vertipaq"` (Pro): VertiPaq storage statistics, optional exact cardinality
 - `run_query` with `operation: "execute"`: Validate correctness quickly while iterating
 - `list_model` with `operation: "search"`: Find expensive measures/calculation items
-- `dax-query-plan-reference.md` (Pro): how to read plan operators
-- `vertipaq-optimization-guide.md` (Pro)
-- `query-performance-guide.md` (Pro)
+- `dax-query-plan-reference.md`: how to read plan operators
+- `vertipaq-optimization-guide.md`
+- `query-performance-guide.md`
 
 ## A. Triage: What Kind of Slowness?
 
@@ -152,7 +152,7 @@ Symptoms:
 
 - Performance worsened after measure/relationship changes.
 
-Best workflow (Pro):
+Best workflow:
 
 - Use `manage_model_changes`:
   - pin a checkpoint before major refactors

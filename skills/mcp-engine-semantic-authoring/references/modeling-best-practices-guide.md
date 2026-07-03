@@ -1,4 +1,4 @@
-# Modeling Best Practices Guide (Pro)
+# Modeling Best Practices Guide
 
 This guide is a practical checklist for building maintainable, performant Power BI semantic models. It is written to be used alongside this server’s tools.
 
@@ -16,8 +16,8 @@ This guide is a practical checklist for building maintainable, performant Power 
   - `../../mcp-engine-schema-authoring/references/column-and-table-authoring-guide.md`
   - `../../mcp-engine-schema-authoring/references/hierarchies-guide.md`
   - `calc-groups-guide.md`
-  - `../../mcp-engine-schema-authoring/references/incremental-refresh-policy-guide.md` (Pro)
-  - `../../mcp-engine-query/references/vertipaq-optimization-guide.md` (Pro)
+  - `../../mcp-engine-schema-authoring/references/incremental-refresh-policy-guide.md`
+  - `../../mcp-engine-query/references/vertipaq-optimization-guide.md`
 
 ## 1) Schema Design (Star First)
 
@@ -82,7 +82,7 @@ Common bloat sources:
 - GUIDs and long strings used widely
 - Unused columns imported “just in case”
 
-Workflow (Pro):
+Workflow:
 
 1. Run `run_query` with `operation: "vertipaq"` to find the largest tables/columns.
 2. Remove unused columns and re-check size and performance.
@@ -97,7 +97,7 @@ Workflow (Pro):
 See:
 
 - `../../mcp-engine-schema-authoring/references/partitions-refresh-guide.md`
-- `../../mcp-engine-schema-authoring/references/incremental-refresh-policy-guide.md` (Pro)
+- `../../mcp-engine-schema-authoring/references/incremental-refresh-policy-guide.md`
 
 ## 8) Calculation Groups (When They Help)
 

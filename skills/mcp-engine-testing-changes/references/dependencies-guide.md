@@ -1,6 +1,6 @@
-# Dependency & Impact Analysis Guide (Pro)
+# Dependency & Impact Analysis Guide
 
-`manage_dependencies` is a Pro tool for answering:
+`manage_dependencies` requires Pro tier and is used for answering:
 - “What uses this measure/column/M expression?”
 - “What will be impacted if I change X?”
 

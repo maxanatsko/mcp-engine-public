@@ -1,4 +1,4 @@
-# Query Performance Guide (`run_query`) (Pro)
+# Query Performance Guide (`run_query`)
 
 This guide explains how to measure DAX query performance and interpret results using `run_query` with `operation: "analyze"`.
 
@@ -6,7 +6,7 @@ This guide explains how to measure DAX query performance and interpret results u
 
 - `run_query`: Run repeated tests and return Storage Engine / Formula Engine metrics (`operation: "analyze"`)
 - `run_query`: Validate correctness and result shape (`operation: "execute"`)
-- `dax-query-plan-reference.md`: Query plan operator reference (Pro)
+- `dax-query-plan-reference.md`: Query plan operator reference
 
 ## Basic Usage
 

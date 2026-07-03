@@ -1,4 +1,4 @@
-# PII Masking Guide (Pro)
+# PII Masking Guide
 
 This guide explains how PII masking works in this server, how to enable it, and what it affects.
 

@@ -300,7 +300,7 @@ Choices:
 Allowed tools after approval:
 
 - `list_model` report operation.
-- Read Pro resources such as `pbi://docs/model` and `pbi://diagram/relationships`.
+- Read relevant model documentation resources when available.
 
 Rules:
 
@@ -326,7 +326,7 @@ Choices:
 Allowed tools after approval:
 
 - `run_query` with `include_query_plan`, `include_timings`, or `trace`.
-- Read Pro performance resources.
+- Read performance resources.
 
 Rules:
 
@@ -362,11 +362,11 @@ Links:
 
 - `docs://security-roles-guide`
 
-## 12. Pro Helpers
+## 12. Prompt And Completion Helpers
 
 Say:
 
-"Some Pro features are helpers rather than setup switches: better completions, deeper guides, and built-in prompts for DAX best practices, naming conventions, and security guidance."
+"Some Pro features are helpers rather than setup switches: better completions and built-in prompts for DAX best practices, naming conventions, and security guidance. Guide documents are available to all tiers."
 
 Ask:
 
@@ -375,7 +375,7 @@ Ask:
 Choices:
 
 - Use Pro helpers automatically when available. Recommended.
-- Ask before using Pro-only deep guides or prompts.
+- Ask before using Pro-only prompts.
 - Keep responses short unless I ask for depth.
 
 Allowed tools after approval:

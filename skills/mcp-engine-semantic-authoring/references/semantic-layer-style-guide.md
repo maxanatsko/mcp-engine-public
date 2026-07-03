@@ -1,4 +1,4 @@
-# Semantic Layer Style Guide (Pro)
+# Semantic Layer Style Guide
 
 This guide defines conventions for naming, organization, and "public surface area" of a Power BI semantic model. It's intended to keep models consistent, discoverable, and safe to evolve.
 
@@ -337,4 +337,4 @@ Before shipping a model update:
 - [ ] Internal/helper objects are hidden
 - [ ] Security roles tested (if applicable)
 - [ ] Field parameters documented and tested (if applicable)
-- [ ] Model changes reviewed via `../../mcp-engine-testing-changes/references/model-changes-guide.md` (Pro)
+- [ ] Model changes reviewed via `../../mcp-engine-testing-changes/references/model-changes-guide.md`

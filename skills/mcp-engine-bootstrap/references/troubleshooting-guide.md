@@ -197,7 +197,7 @@ Fix:
   - `cross_filter_direction="OneDirection"`
 - Use inactive relationships for alternate date keys and `USERELATIONSHIP` in measures.
 
-See: `../../mcp-engine-schema-authoring/references/relationships-guide.md` and `../../mcp-engine-semantic-authoring/references/modeling-best-practices-guide.md` (Pro).
+See: `../../mcp-engine-schema-authoring/references/relationships-guide.md` and `../../mcp-engine-semantic-authoring/references/modeling-best-practices-guide.md`.
 
 ### Relationship was created but `RELATED()` or validation still fails
 
@@ -250,7 +250,7 @@ Fix:
 
 - Create Power Query parameters named `RangeStart` and `RangeEnd` (DateTime), or set `range_start_parameter` / `range_end_parameter` to the names you use.
 
-See: `../../mcp-engine-schema-authoring/references/incremental-refresh-policy-guide.md` (Pro).
+See: `../../mcp-engine-schema-authoring/references/incremental-refresh-policy-guide.md`.
 
 ### “refresh_policy.source_expression is required”
 
@@ -260,16 +260,16 @@ Fix:
 
 ## Licensing and Pro Gating
 
-### Resource or parameter requires Pro
+### Parameter or feature requires Pro
 
 Symptoms:
 
-- `resources/read` fails with “requires Pro tier”.
 - Some tool parameters are gated (e.g., performance plan capture).
+- A tool reports that its operation requires Pro tier.
 
 Fix:
 
-- Use non-Pro equivalents where possible, or upgrade your tier.
+- Use non-Pro equivalents where possible, or upgrade your tier for the gated feature.
 - For performance: run without `include_query_plan` first, then enable it when needed.
 
 ## Large Outputs / Token Pressure

@@ -1,10 +1,10 @@
-# Model Changes Guide (`manage_model_changes`) (Pro)
+# Model Changes Guide (`manage_model_changes`)
 
 This guide explains how to use the Pro Model Changes feature to track write operations, diff schema changes, pin checkpoints, and manage/apply changesets.
 
 ## Related Tools
 
-- `manage_model_changes` (Pro): Transaction history, diffs, rollback, checkpoints, changesets
+- `manage_model_changes`: Pro feature for transaction history, diffs, rollback, checkpoints, and changesets
 - `list_model`: Inspect current model state (`operation: "list"`, `spec: { type: "tables|measures|relationships" }`)
 - `list_model`: Find dependencies before refactors (`operation: "search"`)
 - `run_query`: Validate results after changes (`operation: "execute"`)

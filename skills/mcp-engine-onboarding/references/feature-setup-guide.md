@@ -344,7 +344,7 @@ Tool/docs surface:
 
 - `run_query` parameters: `include_query_plan`, `include_timings`, `trace`
 - Pro feature: `advanced_tool_use`
-- Pro resources: `pbi://stats/vertipaq`, `docs://query-performance-guide`, `docs://dax-query-plan-reference`, `docs://vertipaq-optimization-guide`
+- Related resources: `docs://query-performance-guide`, `docs://dax-query-plan-reference`, `docs://vertipaq-optimization-guide`
 
 Approval requirement:
 
@@ -381,20 +381,20 @@ Approval requirement:
 
 Do not set impersonation without explicit user identity and approval. Never invent identities.
 
-## Pro Prompts, Completions, And Resources
+## Pro Prompts And Completions
 
 Plain-language explanation:
 
-Some Pro features are helpers rather than settings: better completions, built-in prompts, and deeper documentation/resources. They make the assistant faster and more accurate but do not usually need setup choices.
+Some Pro features are helpers rather than settings: better completions and built-in prompts. Guide documents are available to all tiers.
 
 Ask:
 
-"Would you like me to use Pro helper prompts and deeper references when they fit your task?"
+"Would you like me to use Pro helper prompts when they fit your task?"
 
 Choices:
 
 - Use them automatically when relevant.
-- Ask before using Pro-only guides or prompts.
+- Ask before using Pro-only prompts.
 - Keep explanations short unless I ask for depth.
 
 Recommended default:
@@ -403,7 +403,7 @@ Use them automatically when relevant and available.
 
 Tool/docs surface:
 
-- Pro features: `completions`, Pro prompts, Pro docs/resources
+- Pro features: `completions`, Pro prompts
 - Prompts: `dax_best_practices`, `naming_conventions`, `security_guidelines`
 
 Approval requirement:

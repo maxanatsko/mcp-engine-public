@@ -1,4 +1,4 @@
-# Incremental Refresh Policy Guide (`manage_schema`) (Pro)
+# Incremental Refresh Policy Guide (`manage_schema`)
 
 This guide explains how to configure and troubleshoot incremental refresh policies using `manage_schema` with `operation: "update_table"` and the `refresh_policy` object in spec.
 

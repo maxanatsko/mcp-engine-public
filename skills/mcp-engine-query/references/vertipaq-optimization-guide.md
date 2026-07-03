@@ -1,4 +1,4 @@
-# VertiPaq Optimization Guide (`run_query`) (Pro)
+# VertiPaq Optimization Guide (`run_query`)
 
 This guide explains how to use VertiPaq storage stats to identify model bloat and performance issues.
 
