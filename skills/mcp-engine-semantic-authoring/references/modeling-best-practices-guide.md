@@ -145,6 +145,7 @@ Common report call shape:
     "format": "both",
     "detail_level": "compliance",
     "report_style": "design_spec",
+    "page_size": "a4",
     "save_to_path": "./model-report",
     "overwrite": false,
     "include_hidden": false,
@@ -163,6 +164,7 @@ Key options:
 - `format`: `both`, `docx`, or `pdf`.
 - `detail_level`: `compliance`, `reader_friendly`, or `minimal`.
 - `report_style`: `design_spec` for curated design documentation, or `inventory` for object-by-object inventory.
+- `page_size`: `a4` (default) or `letter`; both DOCX and PDF use the selected size and table widths are derived from it.
 - `save_to_path`: base output path without extension; relative paths resolve under the configured export root.
 - `tables_include` / `tables_exclude`: optional table name filters.
 - `fact_tables`: optional fact-table hints for relationship diagrams.
@@ -170,6 +172,8 @@ Key options:
 - `report_title`, `report_classification`, and `report_prepared_for`: optional cover/report metadata.
 
 Reports stay curated and filtered for internal system artifacts. Use `list_model` list/search operations when you need raw metadata inspection.
+
+Note for future renderer work: any MigraDoc report renderer replacement must consume the same `page_size` report option rather than reintroducing renderer-specific page-size defaults.
 
 ## 12) Microsoft Fabric and Lakehouse Considerations
 
