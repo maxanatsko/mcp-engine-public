@@ -67,7 +67,7 @@ Find downstream dependents (impact analysis).
 Common spec fields:
 - `target` (required): `{ id?, type, name?, table?, calculation_group?, from_table?, from_column?, to_table?, to_column? }`
   - `id`: optional canonical id (e.g., copied from `graph.nodes[].id`)
-  - `type`: `table|measure|column|calculated_column|hierarchy|relationship|calculation_group|calculation_item|kpi|partition|named_expression|udf|role|perspective|culture|calendar|model_property`
+  - `type`: `table|calculated_table|measure|column|calculated_column|hierarchy|relationship|calculation_group|calculation_item|kpi|partition|named_expression|udf|role|perspective|culture|calendar|model_property`
   - `table` is required for: `measure|column|calculated_column|partition|hierarchy|calendar|kpi`
   - `calculation_group` is required for `calculation_item`
   - `relationship` can be targeted via `id`, or via `from_table/from_column/to_table/to_column`
@@ -81,10 +81,10 @@ Common spec fields:
   - `exclude_system_annotations`: `true|false` (default `true`)
   - `annotation_prefix_exclude`: string array of annotation key prefixes to exclude (optional)
   - Default system filters include annotation names starting with `PBI_` / `TabularEditor_`, plus `SummarizationSetBy` and `PBI_FormatHint`.
-- `expand_metadata`: include metadata edges in traversal (default `false`; root-only)
+- `expand_metadata`: scan metadata while expanding traversal nodes (default `false`; root-only; does not add metadata fields to output items)
 - `types`: restrict dependent types returned (optional)
 - `case_sensitive`: `true|false` (default `false`)
-- `limit_per_type`: cap items returned per bucket (default comes from server config)
+- `limit_per_type`: cap items returned per bucket (default comes from server config); groups set `truncated=true` when more items exist
 - Limits: `max_nodes`, `max_edges`, `max_expansions_per_node`
 - `confidence_min`: `exact|high|any` (default `high`)
 
