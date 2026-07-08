@@ -88,6 +88,8 @@ Common spec fields:
 - Limits: `max_nodes`, `max_edges`, `max_expansions_per_node`
 - `confidence_min`: `exact|high|any` (default `high`)
 
+Calculation item targets are valid, but direct dependents are usually not expected. Calculation items are applied through filter context on the calculation group column instead of being referenced by item name in DAX expressions. When an existing calculation item target returns no matches, the response includes a warning that points to the calculation group column target when the column name is known, for example `target: { "type": "column", "table": "Time Intelligence", "name": "Calculation" }`.
+
 ### Structural edges (exact)
 With `include_structural=true`, `manage_dependencies` can return non-expression dependents like:
 - Relationship endpoints (column/table used in a relationship)
