@@ -102,6 +102,15 @@ With `include_structural=true`, `manage_dependencies` can return non-expression 
 
 These appear in `graph.edges[]` with `mode="structural"` and a `kind` describing the relationship (e.g., `relationship_column`, `sort_by`).
 
+### Calculation dependency source diagnostics
+
+For DAX-capable targets, `included.calculation_dependency_source` explains how calculation dependencies were found:
+- `source`: `dmv`, `text_fallback`, or `text`.
+- `text_mode`: `supplementary` when text scanning is used alongside DMV exact edges, `fallback` when DMV access failed, `primary` when text scanning is the normal source, or `not_used`.
+- `dmv_diagnostics`: DMV row counts (`total_rows`, `mapped_rows`, `skipped_rows`, `skipped_row_ratio`) plus whether expected skipped-row warnings were suppressed.
+
+Expected Analysis Services internal DMV rows are recorded in diagnostics without producing warnings. A skipped-row warning is emitted only when the skipped volume is unusually high.
+
 ### Metadata edges (mentions)
 With `include_metadata=true`, matches in metadata fields (like `description`, `display_folder`, annotations, translations) are returned as `mode="text"` edges with `kind="mentions"`.
 
