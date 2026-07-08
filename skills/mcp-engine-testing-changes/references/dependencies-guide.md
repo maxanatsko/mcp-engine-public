@@ -88,6 +88,8 @@ Common spec fields:
 - Limits: `max_nodes`, `max_edges`, `max_expansions_per_node`
 - `confidence_min`: `exact|high|any` (default `high`)
 
+When `confidence_min` suppresses otherwise eligible candidates, the response includes `filtered_by_confidence` with the requested threshold, total filtered count, and counts by dependent type. For example, `confidence_min="exact"` can suppress RLS `role_filter` matches because RLS expressions are text-pattern matches with `confidence="high"`; the response warns to use `confidence_min="high"` when those role-filter hits are needed.
+
 Calculation item targets are valid, but direct dependents are usually not expected. Calculation items are applied through filter context on the calculation group column instead of being referenced by item name in DAX expressions. When an existing calculation item target returns no matches, the response includes a warning that points to the calculation group column target when the column name is known, for example `target: { "type": "column", "table": "Time Intelligence", "name": "Calculation" }`.
 
 ### Structural edges (exact)
