@@ -134,7 +134,7 @@ Before/after a change (especially refactors):
 
 ## 11) Model Documentation Reports (Pro)
 
-Use `list_model` with `operation: "report"` to generate curated DOCX/PDF documentation for the connected semantic model.
+Use `list_model` with `operation: "report"` to generate curated DOCX/PDF/HTML documentation for the connected semantic model.
 
 Common report call shape:
 
@@ -142,7 +142,7 @@ Common report call shape:
 {
   "operation": "report",
   "spec": {
-    "format": "both",
+    "formats": ["docx", "pdf", "html"],
     "detail_level": "compliance",
     "report_style": "design_spec",
     "page_size": "a4",
@@ -161,7 +161,7 @@ Common report call shape:
 
 Key options:
 
-- `format`: `both`, `docx`, or `pdf`.
+- `formats`: required array of output formats to generate. Supported values are `docx`, `pdf`, and `html`; combine them to write multiple files from the same report run.
 - `detail_level`: `compliance`, `reader_friendly`, or `minimal`.
 - `report_style`: `design_spec` for curated design documentation, or `inventory` for object-by-object inventory.
 - `page_size`: `a4` (default) or `letter`; both DOCX and PDF use the selected size and table widths are derived from it.
@@ -170,6 +170,8 @@ Key options:
 - `fact_tables`: optional fact-table hints for relationship diagrams.
 - `diagrams_include_inactive` and `diagrams_include_bi_directional`: include extra relationship paths in diagrams.
 - `report_title`, `report_classification`, and `report_prepared_for`: optional cover/report metadata.
+
+HTML reports inline their CSS and SVG diagrams, do not load CDN scripts or remote assets by default, and can be printed to PDF from a browser.
 
 Reports stay curated and filtered for internal system artifacts. Use `list_model` list/search operations when you need raw metadata inspection.
 
