@@ -416,6 +416,15 @@ Assert query executes within time budget:
 }
 ```
 
+Cold and warm run behavior:
+- `spec.runs.cold` iterations attempt to clear the VertiPaq cache before each query execution when `cache_control` is supported.
+- Desktop connections support `cache_control`; Power BI Service/shared-capacity XMLA connections may restrict cache clearing.
+- If cache clearing fails or is unavailable, the affected cold iteration still runs and is reported in safe diagnostics as `cache_cleared: false`; interpret that timing as warm-cache.
+- Budgets with cold runs consume the `cache_control` capability when supported, regardless of which timing thresholds are asserted; unsupported cache control is surfaced in assertion diagnostics as `cache_cleared: false`.
+- When a run includes a supported `cache_control` test, the runner executes the batch sequentially so other DAX-running tests cannot warm the model cache between clear and measurement.
+- Supported `cache_control` runs are also isolated per model across concurrent `manage_tests` runs so another task-backed test run cannot warm the model cache while cold measurements are in progress.
+- Warm-only budgets (`spec.runs.cold: 0`) do not require `cache_control` and run unchanged on Service.
+
 ### regression_snapshot
 
 Detect data drift by comparing to baseline:
