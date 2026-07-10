@@ -17,6 +17,7 @@ When enabled, the server attempts to detect and mask potentially sensitive value
 - international phone numbers and phone-like local formats when metadata or repeated column evidence supports them
 - dates of birth in explicitly birth-date-style columns
 - bank-account-style values in explicitly account-style columns
+- customer-facing usernames, logins, aliases, and handles when semantic evidence is corroborated by sensitive table, data-category, or authoritative metadata context
 - country- or organization-specific identifiers defined via custom detectors, explicit model annotations, or runtime force rules
 - other values inferred from strong column hints, explicit model annotations, runtime force rules, and custom patterns
 
@@ -185,6 +186,33 @@ PII masking decisions now use internal scored evidence from:
 - explicit runtime preferences and `McpEngine_PiiMasking` annotations
 
 Diagnostics are internal only and do not include raw sampled values.
+
+### Legacy `ColumnHints` compatibility
+
+`PiiMasking.ColumnHints` is the legacy untyped hint list. Case-insensitive substring
+matching is retained for suspicion checks, while recognized hints are assigned to an
+explicit semantic category before they can influence masking:
+
+- `email` / `mail` → email
+- `phone` / `mobile` / `cell` / `tel` → phone
+- `dob` / `birth` → date of birth
+- `name` compounds → name
+- `address` / `street` / `shipping` / `billing` → address
+- `city` → city; `state` / `province` / `region` → region
+- `zip` / `postal` / `postcode` → postal code; `country` / `continent` → country
+- bank-account, payment-card, tax-ID, national-ID, demographic, handle, and free-text terms → their matching semantic categories
+
+Specific terms are resolved before generic ones, so `username` maps to the customer
+contact-handle category rather than the name category. Bare `contact` and unknown
+custom hints remain context-only: they can make `IsSuspiciousColumn` true, but they
+do not silently become sensitive semantic categories and do not produce startup
+warnings.
+
+Handle values use the dedicated `CustomerContactHandle` PII type and render as
+`[MASKED CONTACT HANDLE]`. A handle-shaped value must be 3–50 characters, contain a
+letter, use only letters, digits, `@`, `.`, `_`, `-`, or `+`, and not be a generic
+boolean/status/technical value. Column-name evidence alone is insufficient on
+neutral or low-sensitivity technical tables.
 
 ### Freeform text redaction
 
