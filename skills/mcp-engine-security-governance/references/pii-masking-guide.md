@@ -81,6 +81,10 @@ When `EnabledHintProfiles` is left unset, `reference_common`, `us_common`, and `
 
 Set `EnabledHintProfiles` to `[]` and `AutoEnableHintProfilesFromModelCulture=false` to disable all built-in and culture-derived numeric profiles. Ratio labels from profiles still require ratio format or value-shape evidence before numeric masking is skipped.
 
+Structural profile entries are sensitivity-classified. Only non-sensitive reference and classification codes, such as postal codes, NAICS, FIPS, NUTS, NACE, municipality codes, and prefecture codes, can bypass numeric masking on a profile name alone. Personal-capable and business/tax identifiers, including CPF, TFN, My Number, NIF, CNPJ, SIREN/SIRET, GSTIN, ABN, and ACN, always fall through to normal numeric masking unless authoritative model metadata or an explicit numeric exclusion/annotation permits preservation. This fail-closed suppression applies even when the identifier's regional numeric profile is disabled, preventing generic hints such as the `Number` suffix from preserving `MyNumber`.
+
+PII and numeric masking remain independently configurable. If PII masking or its paired detector profile is disabled while numeric masking remains enabled, sensitive numeric identifiers still receive numeric masking. If numeric masking is disabled too, protection depends entirely on the configured PII detectors; disabling both masking features returns original values by explicit operator choice.
+
 Force-disable environment variables have the highest precedence. They are intended for local, process-scoped hosts such as the bundled Test Runner app that need raw values while still sharing the user's existing `~/.mcp-engine` storage.
 
 ### Custom detection patterns
@@ -319,7 +323,7 @@ Important numeric masking default in this release:
 
 - direct-source structural columns such as keys, date parts, sort helpers, and relationship columns can still remain unmasked
 - region and reference-code exclusions are now sourced from named numeric hint profiles instead of being hardcoded into the universal core
-- localized structural hints such as `SIREN`, `SIRET`, `NIF`, `NUTS`, and `NACE` can preserve reference-code utility
+- non-sensitive localized reference/classification hints such as `NUTS` and `NACE` can preserve utility, while personal and business/tax identifiers such as `NIF`, `SIREN`, and `SIRET` no longer bypass numeric masking on name alone
 - ratio-like labels such as `rate`, `margin`, `share`, `growth`, or `weight` no longer bypass masking on name alone
 - localized ratio labels such as `taux`, `marge`, `Anteil`, and `croissance` also require corroborating format or value-shape evidence
 - ratio-like columns are excluded from numeric masking only when corroborating evidence also supports ratio semantics
