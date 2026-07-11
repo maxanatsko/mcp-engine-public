@@ -110,7 +110,7 @@ This release ships with named detector profiles enabled by default:
 - `us_common`
 - `europe_common`
 
-These profiles expand into typed custom detectors during startup. They currently cover common US national/tax IDs and a broad set of European VAT-style identifiers, plus an IBAN-style exact match detector.
+These profiles compile into internal typed detectors during startup. They currently cover common US national/tax IDs, a broad set of European VAT-style identifiers, and registry-backed IBAN detection.
 
 Additional opt-in profiles are also available:
 
@@ -118,9 +118,26 @@ Additional opt-in profiles are also available:
 - `apac_common`
 - `oceania_common`
 
-These opt-in profiles cover additional regional identifiers such as CPF/CURP, Aadhaar/PAN/My Number/Chinese Resident ID/Korean RRN, and Australian TFN. They are not enabled by default because several of those formats are numeric-only and are safer to opt into explicitly for your deployment.
+These opt-in profiles cover additional regional identifiers such as CPF/CNPJ/CURP/RFC, Aadhaar/PAN/My Number/Chinese Resident ID/Korean RRN, and Australian TFN. They are not enabled by default because several of those formats are numeric-only and are safer to opt into explicitly for your deployment. CNPJ detection accepts both existing numeric registrations and the alphanumeric format introduced for new registrations in 2026.
 
-The shipped regional profiles also opt into bounded token matching for exact detectors. That means values such as `DE123456789` can still be redacted when they appear as standalone tokens inside free text or log messages, while user-defined `ExactOnly=true` detectors remain whole-value only unless you explicitly opt in.
+The shipped regional profiles also opt into bounded token matching for exact detectors. That means validated values such as `DE136695976` can still be redacted when they appear as standalone tokens inside free text or log messages, while user-defined `ExactOnly=true` detectors remain whole-value only unless you explicitly opt in.
+
+### Shape detection and offline validation
+
+Built-in regional detectors separate a matching value shape from a locally validated candidate:
+
+- candidates that pass a documented checksum, range, date, country-length, or structural rule are high confidence;
+- candidates that match a built-in shape but fail validation are medium confidence;
+- built-in formats without a stable offline validator, such as EIN and some country-specific VAT variants, are also medium confidence;
+- medium-confidence profile matches require matching semantic column/metadata context before cell values are masked;
+- context-free log redaction only applies high-confidence profile matches;
+- user-defined and legacy custom regex detectors keep their existing high-confidence behavior.
+
+Validation is deterministic, allocation-bounded, exception-safe, and performs no network calls. It does not prove that an identifier was issued, is active, or belongs to a person or organization. For example, VAT validation does not call VIES, and IBAN validation checks the SWIFT registry country format plus MOD-97 without contacting a bank.
+
+IBAN matches are reported as `BankAccount`, not `Custom`. Whole values therefore use the bank-account mask and retain only the final four alphanumeric characters. An IBAN-shaped value with an invalid checksum, country length, or BBAN structure is not a global high-confidence match; a strongly bank-account-labeled column can still treat it as contextual medium-confidence evidence.
+
+Profile compilation writes warnings for unknown or repeated profile names and for duplicate/conflicting detector definitions. Built-ins take precedence over typed custom detectors, which take precedence over legacy patterns; later conflicting definitions are skipped deterministically.
 
 You can override them in config:
 
