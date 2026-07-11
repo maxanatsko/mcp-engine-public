@@ -105,6 +105,43 @@ For new configuration, prefer typed custom detectors under the `PiiMasking` sect
 
 ### Default detector profiles
 
+<!-- masking-catalog:start -->
+### Generated masking catalog inventory
+
+This table is generated from the runtime catalogs. Regenerate it together with the fixture snapshot after reviewed catalog changes.
+
+| Catalog | Profile | Entries |
+| --- | --- | ---: |
+| Semantic labels | `cz_common` | 21 |
+| Semantic labels | `de_common` | 41 |
+| Semantic labels | `en_common` | 84 |
+| Semantic labels | `es_common` | 30 |
+| Semantic labels | `fr_common` | 28 |
+| Numeric hints | `apac_common` | 6 |
+| Numeric hints | `europe_common` | 32 |
+| Numeric hints | `latam_common` | 18 |
+| Numeric hints | `oceania_common` | 5 |
+| Numeric hints | `reference_common` | 13 |
+| Numeric hints | `us_common` | 8 |
+| Numeric hints | `default` | 67 |
+| PII detectors | `apac_common` | 5 |
+| PII detectors | `europe_common` | 29 |
+| PII detectors | `latam_common` | 4 |
+| PII detectors | `oceania_common` | 1 |
+| PII detectors | `us_common` | 3 |
+
+| Numeric match mode | Entries | Hard preserve | Corroboration only |
+| --- | ---: | ---: | ---: |
+| `strong_ratio` | 9 | 0 | 9 |
+| `structural_token` | 93 | 65 | 28 |
+| `suffix_only` | 10 | 10 | 0 |
+| `weak_ratio` | 37 | 0 | 37 |
+
+| Detector overlap group | Priority order | Scope |
+| --- | --- | --- |
+| `apac_12_digit_national_id` | `detector/apac_common/inaadhaar` → `detector/apac_common/jpmynumber` | `IN`, `JP` |
+<!-- masking-catalog:end -->
+
 This release ships with named detector profiles enabled by default:
 
 - `us_common`
