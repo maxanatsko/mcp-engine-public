@@ -77,14 +77,17 @@ Numeric masking keeps a smaller universal structural core and expands region/ref
 - `latam_common`
 - `apac_common`
 - `oceania_common`
+- language semantic lexicons: `zh_hans_semantic`, `zh_hant_semantic`, `ja_semantic`, `th_semantic`
 
-When `EnabledHintProfiles` is left unset, `reference_common`, `us_common`, and `europe_common` supply the base structural/reference-code hints. Profile-derived ratio labels are narrower: they apply only when their profile is explicitly listed in `EnabledHintProfiles` or selected from the connected model culture. For example, the `europe_common` ratio term `part` does not apply globally merely because that profile supplies default structural hints. When `AutoEnableHintProfilesFromModelCulture` is true, model culture can add a matching regional profile, such as `europe_common` for `fr-FR`, `latam_common` for `pt-BR`, `apac_common` for `ja-JP`, or `oceania_common` for `en-AU`.
+When `EnabledHintProfiles` is left unset, `reference_common`, `us_common`, and `europe_common` supply the base structural/reference-code hints. Profile-derived ratio labels are narrower: they apply only when their profile is explicitly listed in `EnabledHintProfiles` or selected from the connected model culture. For example, the `europe_common` ratio term `part` does not apply globally merely because that profile supplies default structural hints. When `AutoEnableHintProfilesFromModelCulture` is true, model culture can add a matching regional profile, such as `europe_common` for `fr-FR`, `latam_common` for `pt-BR`, `apac_common` plus `ja_semantic` for `ja-JP`, or `oceania_common` for `en-AU`. Chinese script subtags select `zh_hans_semantic` or `zh_hant_semantic`; Thai selects `th_semantic`.
 
 Set `EnabledHintProfiles` to `[]` and `AutoEnableHintProfilesFromModelCulture=false` to disable all built-in and culture-derived numeric profiles. Profile-derived ratio labels use normalized whole-name, explicit-token, and adjacent-token phrase matching; embedded substrings and unresolved compact labels do not count as ratio evidence. A matching ratio label still requires ratio format or value-shape evidence before numeric masking is skipped.
 
 Structural profile entries are sensitivity- and authority-classified. Reviewed non-sensitive reference and classification codes, such as postal codes, NAICS, FIPS, NUTS, NACE, municipality codes, and prefecture codes, can bypass numeric masking only as exact whole identifiers or safely anchored code names. Broad geographic or administrative nouns are corroborating evidence only; a token such as `District` cannot preserve `DistrictBudget`. Personal-capable and business/tax identifiers, including CPF, TFN, My Number, NIF, CNPJ, SIREN/SIRET, GST/GSTIN, ABN, and ACN, remain fail-closed unless authoritative model metadata or an explicit numeric exclusion/annotation permits preservation. This suppression applies even when the identifier's regional numeric profile is disabled, preventing generic hints such as the `Number` suffix from preserving `MyNumber`.
 
 Structural-name matching is Unicode-aware and uses invariant compatibility normalization rather than the process locale. Full-width forms are folded consistently, while script-essential combining marks remain part of identifier identity. Culture-selected connector rules support fully covered compounds in the recognized Latin-language cultures, while configured and profile hints may use any Unicode script. The scorer does not translate names, apply language-specific business-word lists, or guess boundaries in unsegmented scripts. Exact or delimiter-separated structural identifiers can be preserved; mixed or unresolved names are masked by default. Explicit `StrongStructuralHints` and legacy `ExcludeHints` remain operator-authoritative compatibility controls.
+
+The shared metadata analyzer records Unicode 17.0 script, source span, boundary source, coverage, ambiguity, and unresolved ranges. Chinese, Japanese, and Thai runs remain explicitly unresolved without a dictionary segmenter. Reviewed exact native labels can still match as whole identifiers; compatibility-only, ambiguous, partial compound, and provider-error results cannot independently preserve numeric values. No external tokenizer or NLP package is loaded by the default runtime.
 
 PII and numeric masking remain independently configurable. If PII masking or its paired detector profile is disabled while numeric masking remains enabled, sensitive numeric identifiers still receive numeric masking. If numeric masking is disabled too, protection depends entirely on the configured PII detectors; disabling both masking features returns original values by explicit operator choice.
 
@@ -117,12 +120,20 @@ This table is generated from the runtime catalogs. Regenerate it together with t
 | Semantic labels | `en_common` | 84 |
 | Semantic labels | `es_common` | 30 |
 | Semantic labels | `fr_common` | 28 |
+| Semantic labels | `ja_common` | 19 |
+| Semantic labels | `th_common` | 20 |
+| Semantic labels | `zh_hans_common` | 22 |
+| Semantic labels | `zh_hant_common` | 22 |
 | Numeric hints | `apac_common` | 6 |
 | Numeric hints | `europe_common` | 32 |
+| Numeric hints | `ja_semantic` | 11 |
 | Numeric hints | `latam_common` | 18 |
 | Numeric hints | `oceania_common` | 5 |
 | Numeric hints | `reference_common` | 13 |
+| Numeric hints | `th_semantic` | 11 |
 | Numeric hints | `us_common` | 8 |
+| Numeric hints | `zh_hans_semantic` | 11 |
+| Numeric hints | `zh_hant_semantic` | 11 |
 | Numeric hints | `default` | 67 |
 | PII detectors | `apac_common` | 5 |
 | PII detectors | `europe_common` | 29 |
@@ -132,10 +143,10 @@ This table is generated from the runtime catalogs. Regenerate it together with t
 
 | Numeric match mode | Entries | Hard preserve | Corroboration only |
 | --- | ---: | ---: | ---: |
-| `strong_ratio` | 9 | 0 | 9 |
-| `structural_token` | 93 | 65 | 28 |
+| `strong_ratio` | 13 | 0 | 13 |
+| `structural_token` | 117 | 89 | 28 |
 | `suffix_only` | 10 | 10 | 0 |
-| `weak_ratio` | 37 | 0 | 37 |
+| `weak_ratio` | 53 | 0 | 53 |
 
 | Detector overlap group | Priority order | Scope |
 | --- | --- | --- |
@@ -205,6 +216,10 @@ Built-in semantic profiles:
 - `fr_common`
 - `es_common`
 - `cz_common`
+- `zh_hans_common`
+- `zh_hant_common`
+- `ja_common`
+- `th_common`
 
 Configuration:
 
@@ -228,6 +243,10 @@ When culture-derived semantic profiles are enabled, model culture adds localized
 It does not override runtime preferences, model annotations, or explicit config. Metadata is treated as
 evidence, not proof: for example `Name` in a customer/contact/user table can mask, while `Name` in a
 product/file/host/category context should remain visible unless explicitly forced.
+
+Native semantic lexicons contribute positive masking evidence only. They cannot create low-sensitivity
+table-role evidence or suppress a value-based detector. The generated masking catalog snapshot records
+their source, review status, cultures, and scripts so unreviewed native entries fail catalog validation.
 
 PII masking decisions now use internal scored evidence from:
 
