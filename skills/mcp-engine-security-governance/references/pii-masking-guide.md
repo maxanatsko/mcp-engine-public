@@ -74,6 +74,8 @@ Numeric masking is controlled separately, but uses the same preference-driven to
 - Culture-derived profiles: `MCP_ENGINE_NUMERIC_AUTO_PROFILES_FROM_CULTURE=true|false`
 - Preferences: `{ "action": "set", "resource": "setting", "id": "numeric_masking_enabled", "value": "true|false" }`
 
+Numeric values are multiplied by one cryptographically generated scalar that remains stable for the current Desktop or Service model connection session and rotates when a new connection session begins. `ScalarMin` and `ScalarMax` must both be finite and greater than zero, and `ScalarMax` must be strictly greater than `ScalarMin`; fixed or invalid ranges are rejected during startup instead of being replaced with fallback values.
+
 Numeric masking keeps a smaller universal structural core and expands region/reference-code hints from named profiles. The built-in profiles are:
 
 - `reference_common`
