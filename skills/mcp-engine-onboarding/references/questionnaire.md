@@ -124,15 +124,16 @@ Choices:
 - Turn on numeric masking.
 - Turn on both. Recommended for customer, people, finance, or regulated models.
 - Keep both off for now.
-- Review the model first and decide force/exclude lists.
+- Review the model first and decide table/column annotations.
 
 Follow-up:
 
-"If you know certain tables or columns are always sensitive, I can force masking for them. If you know some lookup tables are safe, I can exclude them. Otherwise, we can leave lists empty for now."
+"If you know certain tables or columns are always sensitive, I can add a `force` annotation. If you know some lookup tables are safe, I can add an `exclude` annotation after review."
 
 Allowed tools after approval:
 
-- `manage_preferences` settings for `pii_masking_enabled`, `numeric_masking_enabled`, force lists, and exclude lists.
+- `manage_preferences` settings for `pii_masking_enabled` and `numeric_masking_enabled`.
+- `manage_schema` annotations for per-table and per-column masking intent.
 
 Links:
 
@@ -424,7 +425,7 @@ Before applying anything, summarize:
 - License action, if any.
 - Connection/model selection, if any.
 - Preference settings to set.
-- Masking force/exclude lists.
+- Masking table/column annotations.
 - Guardrail packs to preview or apply.
 - Test packs to preview or apply.
 - Checkpoints or dependency checks to run.

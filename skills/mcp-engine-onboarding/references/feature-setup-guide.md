@@ -76,8 +76,8 @@ Choices:
 
 - Turn on PII masking: good for customer, employee, contact, or account data.
 - Keep it off: acceptable for demo or public data.
-- Force specific fields: always mask named sensitive tables or columns.
-- Decide after model review: inspect metadata first, then recommend force/exclude lists.
+- Classify specific fields: add `force` or `exclude` annotations to reviewed tables or columns.
+- Decide after model review: inspect metadata first, then recommend annotations.
 
 Recommended default:
 
@@ -86,13 +86,14 @@ Turn on PII masking when the model may contain people, customer, or account data
 Tool/docs surface:
 
 - `manage_preferences`
-- Setting IDs: `pii_masking_enabled`, `pii_masking_force_columns`, `pii_masking_force_tables`, `pii_masking_exclude_columns`, `pii_masking_exclude_tables`
+- Setting ID: `pii_masking_enabled`
+- `manage_schema` annotations: `McpEngine_PiiMasking=force|exclude`
 - `docs://pii-masking-guide`
 - Wiki: `docs/wiki/tools/manage_preferences-settings.mdx`
 
 Approval requirement:
 
-Changing masking settings requires explicit approval. Force/exclude lists must be repeated back without exposing sensitive sample values.
+Changing masking settings or model annotations requires explicit approval. Repeat annotation targets without exposing sensitive sample values.
 
 ## Numeric Masking
 
@@ -108,8 +109,8 @@ Choices:
 
 - Turn on numeric masking: good for finance, payroll, forecasts, and confidential metrics.
 - Keep numeric values visible: useful when exact numbers are needed for analysis.
-- Force specific fields: always mask named numeric tables or columns.
-- Exclude safe reference tables: keep calendars or harmless lookup numbers readable.
+- Classify specific fields: add `force` or `exclude` annotations to reviewed tables or columns.
+- Exclude safe reference tables: annotate reviewed calendars or harmless lookup tables.
 
 Recommended default:
 
@@ -118,7 +119,8 @@ Turn on numeric masking for finance or regulated models; otherwise ask first.
 Tool/docs surface:
 
 - `manage_preferences`
-- Setting IDs: `numeric_masking_enabled`, `numeric_masking_force_columns`, `numeric_masking_force_tables`, `numeric_masking_exclude_columns`, `numeric_masking_exclude_tables`
+- Setting ID: `numeric_masking_enabled`
+- `manage_schema` annotations: `McpEngine_NumericMasking=force|exclude`
 - `docs://pii-masking-guide`
 - Wiki: `docs/wiki/tools/manage_preferences-settings.mdx`
 

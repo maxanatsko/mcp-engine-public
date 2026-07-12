@@ -18,34 +18,41 @@ When enabled, the server attempts to detect and mask potentially sensitive value
 - dates of birth in explicitly birth-date-style columns
 - bank-account-style values in explicitly account-style columns
 - customer-facing usernames, logins, aliases, and handles when semantic evidence is corroborated by sensitive table, data-category, or authoritative metadata context
-- country- or organization-specific identifiers defined via custom detectors, explicit model annotations, or runtime force rules
-- other values inferred from strong column hints, explicit model annotations, runtime force rules, and custom patterns
+- country- or organization-specific identifiers defined via custom detectors or explicit model annotations
+- other values inferred from strong column hints, explicit model annotations, and custom patterns
 
 Masking is applied to tool responses that return data values (e.g., query results and table previews).
 
 ## Pro Licensing Requirement
 
-PII masking requires:
-
-1. Configuration enabled (`MCP_ENGINE_PII_MASKING=true` or build flag), and
-2. A Pro tier license allowing the internal feature `pii_masking`.
-
-If configuration enables masking but the license is not Pro, the server logs a warning and returns unmasked data.
+PII masking requires a Pro tier license allowing the internal feature `pii_masking`. The host mode and startup/runtime settings determine whether the server requests it. If a requested feature is unavailable, the server fails before querying or returning model data with `error_code: "MASKING_UNAVAILABLE"`.
 
 ## How to Enable
 
-### Runtime enable/disable
+### Host mode and startup defaults
 
-Set:
+Set `MCP_ENGINE_DATA_MASKING_MODE` to:
 
-- `MCP_ENGINE_PII_MASKING=true` (enable)
-- `MCP_ENGINE_PII_MASKING=false` (disable)
-- `MCP_ENGINE_FORCE_DISABLE_PII_MASKING=1` (force-disable for the current process, even if preferences enable masking)
+- `configured`: runtime preferences override the `MCP_ENGINE_PII_MASKING` and `MCP_ENGINE_NUMERIC_MASKING` startup defaults.
+- `off`: both maskers stay disabled and runtime toggle changes are rejected.
+- `locked_on`: both maskers stay enabled and runtime toggle changes are rejected.
+
+The equivalent JSON setting is `DataMasking:Mode`. The default mode is `configured`. The connection status and data-bearing responses report the captured mode plus each feature's requested, enabled, available, source, and optional reason state. Source values are `runtime`, `startup`, `forced`, or `unavailable`.
+
+Version 4 removes the old per-object preference lists and deployment exclusions. Use model annotations instead. The server rejects obsolete JSON keys and these environment variables during startup:
+
+- `MCP_ENGINE_PII_EXCLUDE_COLUMNS`
+- `MCP_ENGINE_NUMERIC_EXCLUDE_COLUMNS`
+- `MCP_ENGINE_NUMERIC_EXCLUDE_TABLES`
+- `MCP_ENGINE_FORCE_DISABLE_PII_MASKING`
+- `MCP_ENGINE_FORCE_DISABLE_NUMERIC_MASKING`
+
+The removed preference IDs are `pii_masking_force_columns`, `pii_masking_force_tables`, `pii_masking_exclude_columns`, `pii_masking_exclude_tables`, `numeric_masking_force_columns`, `numeric_masking_force_tables`, `numeric_masking_exclude_columns`, and `numeric_masking_exclude_tables`.
 
 ### Runtime enable/disable (via preferences)
 
-You can also toggle masking at runtime using `manage_preferences` (portable preferences).
-This overrides the config default and takes effect immediately for subsequent tool calls.
+In `configured` mode, you can toggle masking at runtime using `manage_preferences` (portable preferences).
+This overrides the config default and takes effect for subsequent tool calls. The `off` and `locked_on` modes reject per-toggle writes and imports with `MASKING_SETTINGS_LOCKED`.
 
 ```json
 // Enable PII masking
@@ -63,11 +70,9 @@ This overrides the config default and takes effect immediately for subsequent to
 Numeric masking is controlled separately, but uses the same preference-driven toggle pattern:
 
 - Config: `MCP_ENGINE_NUMERIC_MASKING=true|false`
-- Force-disable: `MCP_ENGINE_FORCE_DISABLE_NUMERIC_MASKING=1`
 - Hint profiles: `MCP_ENGINE_NUMERIC_MASKING_PROFILES="reference_common,us_common,europe_common"`
 - Culture-derived profiles: `MCP_ENGINE_NUMERIC_AUTO_PROFILES_FROM_CULTURE=true|false`
 - Preferences: `{ "action": "set", "resource": "setting", "id": "numeric_masking_enabled", "value": "true|false" }`
-- Exclusions (runtime): `numeric_masking_exclude_columns`, `numeric_masking_exclude_tables`
 
 Numeric masking keeps a smaller universal structural core and expands region/reference-code hints from named profiles. The built-in profiles are:
 
@@ -83,7 +88,7 @@ When `EnabledHintProfiles` is left unset, `reference_common`, `us_common`, and `
 
 Set `EnabledHintProfiles` to `[]` and `AutoEnableHintProfilesFromModelCulture=false` to disable all built-in and culture-derived numeric profiles. Profile-derived ratio labels use normalized whole-name, explicit-token, and adjacent-token phrase matching; embedded substrings and unresolved compact labels do not count as ratio evidence. A matching ratio label still requires ratio format or value-shape evidence before numeric masking is skipped.
 
-Structural profile entries are sensitivity- and authority-classified. Reviewed non-sensitive reference and classification codes, such as postal codes, NAICS, FIPS, NUTS, NACE, municipality codes, and prefecture codes, can bypass numeric masking only as exact whole identifiers or safely anchored code names. Broad geographic or administrative nouns are corroborating evidence only; a token such as `District` cannot preserve `DistrictBudget`. Personal-capable and business/tax identifiers, including CPF, TFN, My Number, NIF, CNPJ, SIREN/SIRET, GST/GSTIN, ABN, and ACN, remain fail-closed unless authoritative model metadata or an explicit numeric exclusion/annotation permits preservation. This suppression applies even when the identifier's regional numeric profile is disabled, preventing generic hints such as the `Number` suffix from preserving `MyNumber`.
+Structural profile entries are sensitivity- and authority-classified. Reviewed non-sensitive reference and classification codes, such as postal codes, NAICS, FIPS, NUTS, NACE, municipality codes, and prefecture codes, can bypass numeric masking only as exact whole identifiers or safely anchored code names. Broad geographic or administrative nouns are corroborating evidence only; a token such as `District` cannot preserve `DistrictBudget`. Personal-capable and business/tax identifiers, including CPF, TFN, My Number, NIF, CNPJ, SIREN/SIRET, GST/GSTIN, ABN, and ACN, remain fail-closed unless authoritative model metadata or an explicit numeric annotation permits preservation. This suppression applies even when the identifier's regional numeric profile is disabled, preventing generic hints such as the `Number` suffix from preserving `MyNumber`.
 
 Structural-name matching is Unicode-aware and uses invariant compatibility normalization rather than the process locale. Full-width forms are folded consistently, while script-essential combining marks remain part of identifier identity. Culture-selected connector rules support fully covered compounds in the recognized Latin-language cultures, while configured and profile hints may use any Unicode script. The scorer does not translate names, apply language-specific business-word lists, or guess boundaries in unsegmented scripts. Exact or delimiter-separated structural identifiers can be preserved; mixed or unresolved names are masked by default. Explicit `StrongStructuralHints` and legacy `ExcludeHints` remain operator-authoritative compatibility controls.
 
@@ -91,7 +96,7 @@ The shared metadata analyzer records Unicode 17.0 script, source span, boundary 
 
 PII and numeric masking remain independently configurable. If PII masking or its paired detector profile is disabled while numeric masking remains enabled, sensitive numeric identifiers still receive numeric masking. If numeric masking is disabled too, protection depends entirely on the configured PII detectors; disabling both masking features returns original values by explicit operator choice.
 
-Force-disable environment variables have the highest precedence. They are intended for local, process-scoped hosts such as the bundled Test Runner app that need raw values while still sharing the user's existing `~/.mcp-engine` storage.
+Host mode has the highest precedence. The bundled Test Runner uses `MCP_ENGINE_DATA_MASKING_MODE=off` so its local workflow receives raw values while sharing the user's existing `~/.mcp-engine` storage.
 
 ### Custom detection patterns
 
@@ -256,7 +261,7 @@ PII masking decisions now use internal scored evidence from:
 - descriptions, display folders, and translations
 - data category
 - technical key, relationship, and surrogate-key signals that lower name/address confidence
-- explicit runtime preferences and `McpEngine_PiiMasking` annotations
+- the runtime enable preference and `McpEngine_PiiMasking` annotations
 
 Diagnostics are internal only and do not include raw sampled values.
 
@@ -298,7 +303,7 @@ structured PII spans and redacts each accepted non-overlapping span while preser
 It can also redact likely names, addresses, or handles when surrounding wording and model context
 indicate the text is about a customer, contact, employee, patient, or user. Multiple embedded values
 no longer force a whole-value `[MASKED]` replacement unless the sensitive spans dominate the text.
-Explicit force rules still whole-mask the value.
+Explicit `force` annotations still whole-mask the value.
 
 Example:
 
@@ -316,50 +321,9 @@ Freeform scanning is bounded to avoid pathological cost and uses the same regex 
 detection paths. Use `StructuredOnly` if you only want structured identifiers redacted inside comments
 and do not want contextual name/address redaction.
 
-### Exclude specific columns
-
-Provide comma-separated column names to never mask:
-
-- `MCP_ENGINE_PII_EXCLUDE_COLUMNS="CustomerId,CountryCode,..."`
-
-Or set exclusions at runtime via preferences (applies immediately; supports comma-separated or JSON array values):
-
-```json
-// Exclude specific columns from masking (supports Table[Column] syntax)
-{ "action": "set", "resource": "setting", "id": "pii_masking_exclude_columns", "value": "Email,Phone" }
-
-// Exclude entire tables from masking
-{ "action": "set", "resource": "setting", "id": "pii_masking_exclude_tables", "value": "Audit,Logs" }
-```
-
-### Force-mask specific columns (runtime)
-
-If you have columns that should always be treated as sensitive (even when values don’t match patterns),
-you can force-mask them at runtime via preferences:
-
-```json
-// Always treat these columns as PII and mask them
-{ "action": "set", "resource": "setting", "id": "pii_masking_force_columns", "value": "[\"Customers[Handle]\",\"Customers[InternalToken]\"]" }
-
-// Always treat these tables as PII and mask them
-{ "action": "set", "resource": "setting", "id": "pii_masking_force_tables", "value": "[\"Customers\"]" }
-
-// Always numerically mask these columns (even if heuristics would usually exclude them, e.g., *ID)
-{ "action": "set", "resource": "setting", "id": "numeric_masking_force_columns", "value": "[\"Customers[CustomerID]\"]" }
-
-// Always numerically mask these tables
-{ "action": "set", "resource": "setting", "id": "numeric_masking_force_tables", "value": "[\"FinanceFacts\"]" }
-```
-
-Notes:
-
-- exclude lists (`*_exclude_columns`, `*_exclude_tables`) take precedence over force lists
-- force lists do not implicitly enable masking; the matching `*_masking_enabled` toggle must also be on
-- `manage_preferences` setting responses warn when force settings are configured while the masker is disabled
-
 ### Per-model annotations
 
-You can also persist masking intent directly in the connected model with TOM annotations on tables and columns:
+Persist per-object masking intent in the connected model with TOM annotations on tables and columns:
 
 - `McpEngine_PiiMasking`: `force` or `exclude`
 - `McpEngine_NumericMasking`: `force` or `exclude`
@@ -370,26 +334,54 @@ Supported targets in v1:
 - source columns
 - calculated columns
 
-These annotations are model-scoped intent only:
+Use `manage_schema` to add the annotations. For example, force PII masking on a source column:
+
+```json
+{
+  "operation": "update_column_properties",
+  "table": "Customers",
+  "target": "Email",
+  "spec": {
+    "annotations_upsert": [
+      { "name": "McpEngine_PiiMasking", "value": "force" }
+    ]
+  }
+}
+```
+
+Exclude a reviewed numeric reference table:
+
+```json
+{
+  "operation": "update_table",
+  "target": "Date",
+  "spec": {
+    "annotations_upsert": [
+      { "name": "McpEngine_NumericMasking", "value": "exclude" }
+    ]
+  }
+}
+```
+
+The same annotation fields work with `update_calc_column`. Remove an annotation by passing its name in `annotations_delete`.
+
+These annotations are model-scoped intent:
 
 - they do not enable masking by themselves
 - the matching `*_masking_enabled` toggle and Pro license gate still apply
 - they are advisory masking hints, not a compliance or access-control boundary
 
-Precedence order:
+Decision order:
 
-1. runtime exclude preferences
-2. runtime force preferences
-3. annotation exclude
-4. annotation force
-5. existing heuristics / metadata rules
+1. table or column annotation `exclude`
+2. table or column annotation `force`
+3. feature-specific heuristics and metadata rules
 
 Tie-break rules:
 
-- runtime preferences override annotations
 - annotations override heuristics
-- `exclude` beats `force` at the same or lower tier
 - table-level `exclude` beats column-level `force`
+- annotations never enable a masker disabled by the host mode
 
 ## What Tools Are Affected
 
@@ -411,7 +403,6 @@ Masking logic considers:
 - strong column and metadata hints from names, descriptions, display folders, translations, and model culture
 - stronger metadata heuristics for `date of birth`, `credit card`, `bank account`, and government-ID style columns
 - custom detectors and legacy custom regex patterns
-- runtime exclude and force lists
 - model annotations (`McpEngine_PiiMasking`, `McpEngine_NumericMasking`)
 - heuristic and metadata evidence for scored masking decisions
 
@@ -432,7 +423,7 @@ Important numeric masking default in this release:
 - ratio-like columns are excluded from numeric masking only when corroborating evidence also supports ratio semantics
 - corroborating evidence currently means percent-style formatting or ratio-shaped sampled values
 - in other words, percent-style formatting is an exemption signal for ratio-like numeric columns, not a masking trigger
-- unresolved or derived DAX outputs default to masking unless an explicit runtime/annotation rule says otherwise
+- unresolved or derived DAX outputs default to masking unless an explicit annotation says otherwise
 - exception: a narrow set of simple aggregate expressions can inherit an existing structural exemption from a resolved source column or table
 - supported inheritance is limited to obvious single-source aggregates such as `SUM(Table[Column])`, `MIN(...)`, `MAX(...)`, `AVERAGE(...)`, `COUNT(...)`, `DISTINCTCOUNT(...)`, and clear row-count outputs based on `COUNTROWS(Table)`
 - constants, iterators, arithmetic, ambiguous expressions, and other unsupported derived outputs still remain masked by default
@@ -444,7 +435,7 @@ Important default in this release:
 - heuristic name masking is limited to stronger identity hints or direct source-column resolution
 - region-specific IDs are shipped through named detector profiles rather than unconditional global built-ins, and can be overridden or disabled per deployment
 - ambiguous local phone formats without country code are only masked when column metadata or repeated column evidence supports them
-- if you need masking for a generic business column, prefer runtime force rules or model annotations
+- if you need masking for a generic business column, add a model annotation
 
 Known best-effort gaps:
 
@@ -466,5 +457,5 @@ Important distinction:
 ## Recommended Use
 
 - Enable PII masking in any environment where models may contain personal data.
-- Use exclude lists for known-safe identifier columns that match patterns accidentally.
+- Add reviewed `exclude` annotations to known-safe identifier columns that match patterns accidentally.
 - Avoid logging tool outputs on the client side; treat masked outputs as still potentially sensitive.
