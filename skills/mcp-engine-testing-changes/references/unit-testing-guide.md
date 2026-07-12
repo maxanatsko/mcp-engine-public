@@ -11,6 +11,7 @@ This guide explains how to use the Pro Unit Testing feature to create, run, and 
 
 ## Test Types
 
+<!-- generated:begin:test-types -->
 | Type | Purpose |
 |------|---------|
 | `measure_assertion` | Assert measure values with tolerance |
@@ -21,9 +22,11 @@ This guide explains how to use the Pro Unit Testing feature to create, run, and 
 | `regression_snapshot` | Detect data drift via baseline comparison |
 | `referential_integrity` | Detect orphan keys in relationships |
 | `metadata_compliance` | Lint model metadata (descriptions, naming) |
+<!-- generated:end:test-types -->
 
 ## Operations Overview
 
+<!-- generated:begin:operations -->
 | Operation | Requires Model | Description |
 |-----------|----------------|-------------|
 | `capabilities` | Yes | Return environment capabilities |
@@ -40,6 +43,7 @@ This guide explains how to use the Pro Unit Testing feature to create, run, and 
 | `validate` | No | Validate test definitions |
 | `packs_list` | No | List available built-in packs |
 | `packs_apply` | Yes | Generate tests from pack |
+<!-- generated:end:operations -->
 
 ---
 
