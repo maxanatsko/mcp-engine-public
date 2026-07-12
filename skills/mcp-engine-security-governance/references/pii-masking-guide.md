@@ -86,13 +86,13 @@ Numeric masking keeps a smaller universal structural core and expands region/ref
 - `oceania_common`
 - language semantic lexicons: `zh_hans_semantic`, `zh_hant_semantic`, `ja_semantic`, `th_semantic`
 
-When `EnabledHintProfiles` is left unset, `reference_common`, `us_common`, and `europe_common` supply the base structural/reference-code hints. Profile-derived ratio labels are narrower: they apply only when their profile is explicitly listed in `EnabledHintProfiles` or selected from the connected model culture. For example, the `europe_common` ratio term `part` does not apply globally merely because that profile supplies default structural hints. When `AutoEnableHintProfilesFromModelCulture` is true, model culture can add a matching regional profile, such as `europe_common` for `fr-FR`, `latam_common` for `pt-BR`, `apac_common` plus `ja_semantic` for `ja-JP`, or `oceania_common` for `en-AU`. Chinese script subtags select `zh_hans_semantic` or `zh_hant_semantic`; Thai selects `th_semantic`.
+`EnabledHintProfiles` explicitly defaults to `reference_common`, `us_common`, and `europe_common`. Their structural, reference-code, and ratio labels are active by default. When `AutoEnableHintProfilesFromModelCulture` is true, model culture can add a matching regional profile, such as `europe_common` for `fr-FR`, `latam_common` for `pt-BR`, `apac_common` plus `ja_semantic` for `ja-JP`, or `oceania_common` for `en-AU`. Chinese script subtags select `zh_hans_semantic` or `zh_hant_semantic`; Thai selects `th_semantic`.
 
 Set `EnabledHintProfiles` to `[]` and `AutoEnableHintProfilesFromModelCulture=false` to disable all built-in and culture-derived numeric profiles. Profile-derived ratio labels use normalized whole-name, explicit-token, and adjacent-token phrase matching; embedded substrings and unresolved compact labels do not count as ratio evidence. A matching ratio label still requires ratio format or value-shape evidence before numeric masking is skipped.
 
 Structural profile entries are sensitivity- and authority-classified. Reviewed non-sensitive reference and classification codes, such as postal codes, NAICS, FIPS, NUTS, NACE, municipality codes, and prefecture codes, can bypass numeric masking only as exact whole identifiers or safely anchored code names. Broad geographic or administrative nouns are corroborating evidence only; a token such as `District` cannot preserve `DistrictBudget`. Personal-capable and business/tax identifiers, including CPF, TFN, My Number, NIF, CNPJ, SIREN/SIRET, GST/GSTIN, ABN, and ACN, remain fail-closed unless authoritative model metadata or an explicit numeric annotation permits preservation. This suppression applies even when the identifier's regional numeric profile is disabled, preventing generic hints such as the `Number` suffix from preserving `MyNumber`.
 
-Structural-name matching is Unicode-aware and uses invariant compatibility normalization rather than the process locale. Full-width forms are folded consistently, while script-essential combining marks remain part of identifier identity. Culture-selected connector rules support fully covered compounds in the recognized Latin-language cultures, while configured and profile hints may use any Unicode script. The scorer does not translate names, apply language-specific business-word lists, or guess boundaries in unsegmented scripts. Exact or delimiter-separated structural identifiers can be preserved; mixed or unresolved names are masked by default. Explicit `StrongStructuralHints` and legacy `ExcludeHints` remain operator-authoritative compatibility controls.
+Structural-name matching is Unicode-aware and uses invariant compatibility normalization rather than the process locale. Full-width forms are folded consistently, while script-essential combining marks remain part of identifier identity. Culture-selected connector rules support fully covered compounds in the recognized Latin-language cultures, while configured and profile hints may use any Unicode script. The scorer does not translate names, apply language-specific business-word lists, or guess boundaries in unsegmented scripts. Exact or delimiter-separated catalog identifiers can be preserved; mixed or unresolved catalog names are masked by default. Explicit `StrongStructuralHints` extend the catalog and remain operator-authoritative.
 
 The shared metadata analyzer records Unicode 17.0 script, source span, boundary source, coverage, ambiguity, and unresolved ranges. Chinese, Japanese, and Thai runs remain explicitly unresolved without a dictionary segmenter. Reviewed exact native labels can still match as whole identifiers; compatibility-only, ambiguous, partial compound, and provider-error results cannot independently preserve numeric values. No external tokenizer or NLP package is loaded by the default runtime.
 
@@ -100,18 +100,16 @@ PII and numeric masking remain independently configurable. If PII masking or its
 
 Host mode has the highest precedence. The bundled Test Runner uses `MCP_ENGINE_DATA_MASKING_MODE=off` so its local workflow receives raw values while sharing the user's existing `~/.mcp-engine` storage.
 
-### Custom detection patterns
+### Custom detectors
 
-Legacy regex support is still available:
-
-- `MCP_ENGINE_PII_PATTERNS="regex1,regex2,..."`
-
-For new configuration, prefer typed custom detectors under the `PiiMasking` section in configuration. These let you:
+Typed custom detectors under `PiiMasking:CustomDetectors` are the only operator-defined value-detection surface. They let you:
 
 - assign a detector type such as `NationalId` or `TaxId`
 - choose exact-only matching or substring matching inside free text
 - keep user-defined `ExactOnly=true` detectors strict by default, with an opt-in to bounded token matches via `AllowTokenMatchesWhenExactOnly`
 - add region-specific identifiers without baking country rules into the global defaults
+
+Version 3.9.0 removes `PiiMasking:ValuePatterns`, `PiiMasking:CustomPatterns`, `PiiMasking:ColumnHints`, and `MCP_ENGINE_PII_PATTERNS`. It also removes the numeric `ExcludeTokens`, `ExcludeHints`, and `PercentageHints` keys. Startup rejects these retired inputs with the canonical replacement instead of silently dropping masking policy.
 
 ### Default detector profiles
 
@@ -266,27 +264,6 @@ PII masking decisions now use internal scored evidence from:
 - the runtime enable preference and `McpEngine_PiiMasking` annotations
 
 Diagnostics are internal only and do not include raw sampled values.
-
-### Legacy `ColumnHints` compatibility
-
-`PiiMasking.ColumnHints` is the legacy untyped hint list. Case-insensitive substring
-matching is retained for suspicion checks, while recognized hints are assigned to an
-explicit semantic category before they can influence masking:
-
-- `email` / `mail` → email
-- `phone` / `mobile` / `cell` / `tel` → phone
-- `dob` / `birth` → date of birth
-- `name` compounds → name
-- `address` / `street` / `shipping` / `billing` → address
-- `city` → city; `state` / `province` / `region` → region
-- `zip` / `postal` / `postcode` → postal code; `country` / `continent` → country
-- bank-account, payment-card, tax-ID, national-ID, demographic, handle, and free-text terms → their matching semantic categories
-
-Specific terms are resolved before generic ones, so `username` maps to the customer
-contact-handle category rather than the name category. Bare `contact` and unknown
-custom hints remain context-only: they can make `IsSuspiciousColumn` true, but they
-do not silently become sensitive semantic categories and do not produce startup
-warnings.
 
 Handle values use the dedicated `CustomerContactHandle` PII type and render as
 `[MASKED CONTACT HANDLE]`. A handle-shaped value must be 3–50 characters, contain a
