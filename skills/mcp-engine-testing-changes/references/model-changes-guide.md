@@ -61,6 +61,12 @@ Additional environment knobs:
 - `MCP_ENGINE_CHANGES_RETENTION_DAYS` (default: 30)
 - `MCP_ENGINE_CHANGES_CLEANUP_INTERVAL_HOURS` (default: 1)
 
+### Snapshot ownership and legacy data
+
+Every snapshot capture and destructive restore requires a trustworthy model owner. Starting with version 3.9.2, capture fails before persistence when the current model identity is unresolved; restores reject snapshots whose `model_id` is blank, `unknown`, or a legacy `*:unknown` sentinel with `SNAPSHOT_MODEL_OWNERSHIP_UNKNOWN`, and reject snapshots owned by another model with `SNAPSHOT_MODEL_MISMATCH`. Transactional writes and batches do not execute when their mandatory before-snapshot cannot establish ownership.
+
+Unowned snapshots cannot be claimed from the current connection and have no temporary compatibility window. The only supported migration is the existing stable-identity alias migration: when persisted model identity metadata positively identifies a legacy model ID as an alias of the current stable ID, the stored snapshot owner is rewritten to that real stable ID before restore. Otherwise, keep the legacy snapshot only as offline evidence and create a new checkpoint from the correctly connected model.
+
 ## Transaction History
 
 ### List transactions
