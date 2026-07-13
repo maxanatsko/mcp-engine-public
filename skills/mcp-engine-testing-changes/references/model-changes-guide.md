@@ -56,7 +56,6 @@ Model changes are stored locally (per user) under:
 
 Additional environment knobs:
 
-- `MCP_ENGINE_CHANGES_MAX_TRANSACTIONS` (default: 50)
 - `MCP_ENGINE_CHANGES_MAX_DISK_MB` (default: 200)
 - `MCP_ENGINE_CHANGES_RETENTION_DAYS` (default: 30)
 - `MCP_ENGINE_CHANGES_CLEANUP_INTERVAL_HOURS` (default: 1)
