@@ -57,16 +57,22 @@ Sources:
 Use these patterns as examples, not as required exact payloads.
 
 ```json
-{ "operation": "list", "type": "tables", "include_hidden": true, "include_descriptions": true }
+{ "operation": "list", "spec": { "type": "tables", "include_details": true } }
 ```
 
 ```json
-{ "operation": "list", "type": "measures", "include_hidden": true, "include_expression": true, "include_descriptions": true }
+{ "operation": "list", "spec": { "type": "measures", "include_expression": true, "include_details": true } }
 ```
+
+Options live under `spec`; `spec.type` is required, `include_details` emits descriptions, and the default `visibility: "all"` already includes hidden objects.
+
+`manage_model_properties` model summary:
 
 ```json
 { "operation": "get" }
 ```
+
+`manage_dependencies` impact check:
 
 ```json
 { "operation": "used_by", "spec": { "target": { "type": "measure", "table": "Sales", "name": "Total Sales" }, "depth": 2 } }

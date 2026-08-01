@@ -151,3 +151,36 @@ Delete:
 `delete_pq_parameter` fails if the target expression does not look like a Power Query parameter (missing `IsParameterQuery=true`).
 
 On Desktop, creating/updating/deleting Power Query parameters updates shared M expressions and returns `desktop_sync_pending=true`. On June 2026+ Power BI Desktop, M/TOM changes are reflected immediately and silently with no Desktop action needed. Older Desktop versions may still show an external-changes banner; only if prompted, click `Discard` to accept MCP's external changes and do not click `Apply`. You may continue additional M changes, but in all Desktop versions call `manage_model_connection` with `operation="reload"` before continuing non-M operations (non-M write tools are blocked until reload verification succeeds). If multiple M changes were made before reload, responses include `desktop_sync_items[]`.
+
+## Bulk Operations and Commit Semantics
+
+Use `items` with `create_pq_parameter`, `update_pq_parameter`, or
+`delete_pq_parameter`:
+
+```json
+{
+  "operation": "update_pq_parameter",
+  "transaction": true,
+  "items": [
+    { "target": "Environment", "spec": { "new_name": "DeploymentEnvironment" } },
+    { "target": "DeploymentEnvironment", "spec": { "current_value": "production" } }
+  ]
+}
+```
+
+- `dry_run=true` parses parameter values and projects parameter classification
+  and batch state without approval or commit.
+- `transaction=true` projects the whole batch, including rename chains and
+  parameter metadata, before approval. It requests approval once and commits
+  the compatibility upgrade and all parameter expression changes once.
+- Duplicate or conflicting targets, regular named expressions, and parameter
+  no-op updates are rejected before transactional approval.
+- `transaction=false` runs one explicit lifecycle per item. It continues after
+  a proven not-applied failure only when mandatory audit finalization is
+  complete, and stops after an unknown commit outcome or incomplete audit
+  finalization.
+
+Every write response includes `operation_outcome`. Never replay a request whose
+outcome is unknown or whose model mutation was applied but response projection
+failed. Inspect the model and model-change history, then follow the response's
+recovery action.

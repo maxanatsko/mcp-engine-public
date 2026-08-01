@@ -10,14 +10,14 @@ This guide is a practical checklist for building maintainable, performant Power 
 - Storage analysis: `run_query` (`operation: "vertipaq"` - Pro)
 - Model tracking: `manage_model_changes` (Pro)
 - Related resources:
-  - `../../mcp-engine-query/references/dax-query-guide.md`
-  - `../../mcp-engine-schema-authoring/references/relationships-guide.md`
+  - `dax-query-guide.md (from the mcp-engine-query skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+  - `relationships-guide.md (from the mcp-engine-schema-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
   - `measure-authoring-guide.md`
-  - `../../mcp-engine-schema-authoring/references/column-and-table-authoring-guide.md`
-  - `../../mcp-engine-schema-authoring/references/hierarchies-guide.md`
+  - `column-and-table-authoring-guide.md (from the mcp-engine-schema-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+  - `hierarchies-guide.md (from the mcp-engine-schema-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
   - `calc-groups-guide.md`
-  - `../../mcp-engine-schema-authoring/references/incremental-refresh-policy-guide.md`
-  - `../../mcp-engine-query/references/vertipaq-optimization-guide.md`
+  - `incremental-refresh-policy-guide.md (from the mcp-engine-schema-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+  - `vertipaq-optimization-guide.md (from the mcp-engine-dax-performance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
 
 ## 1) Schema Design (Star First)
 
@@ -96,8 +96,8 @@ Workflow:
 
 See:
 
-- `../../mcp-engine-schema-authoring/references/partitions-refresh-guide.md`
-- `../../mcp-engine-schema-authoring/references/incremental-refresh-policy-guide.md`
+- `partitions-refresh-guide.md (from the mcp-engine-schema-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- `incremental-refresh-policy-guide.md (from the mcp-engine-schema-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
 
 ## 8) Calculation Groups (When They Help)
 
@@ -120,8 +120,8 @@ Guidance:
 
 See:
 
-- `../../mcp-engine-security-governance/references/security-roles-guide.md`
-- `../../mcp-engine-security-governance/references/perspectives-guide.md`
+- `security-roles-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- `perspectives-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
 
 ## 10) Validation and Regression Checks
 
@@ -130,7 +130,7 @@ Before/after a change (especially refactors):
 - `list_model` with `operation: "search"` and `spec: { mode: "dax", query: "[MeasureName]" }` to find impacted dependencies.
 - `run_query` validation queries for core KPIs (multiple scenarios/filters).
 - `run_query` with `operation: "analyze"` (Pro) for performance regressions on representative queries.
-- Consider pinning a checkpoint and/or using changesets before large batches (`../../mcp-engine-testing-changes/references/model-changes-guide.md`).
+- Consider pinning a checkpoint and/or using changesets before large batches (`model-changes-guide.md (from the mcp-engine-testing-changes skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`).
 
 ## 11) Model Documentation Reports (Pro)
 

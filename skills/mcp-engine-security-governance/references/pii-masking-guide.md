@@ -5,7 +5,7 @@ This guide explains how PII masking works in this server, how to enable it, and 
 ## Related Tools and Resources
 
 - `run_query` (`operation: "execute"`) and `list_model` (`operation: "analyze"`) return values that may be masked
-- `../../mcp-engine-bootstrap/references/troubleshooting-guide.md` (licensing/config pitfalls)
+- `troubleshooting-guide.md (from the mcp-engine-bootstrap skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)` (licensing/config pitfalls)
 
 ## What It Does
 

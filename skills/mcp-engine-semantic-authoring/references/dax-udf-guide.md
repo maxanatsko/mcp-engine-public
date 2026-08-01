@@ -169,7 +169,15 @@ The recommended tool shape is to put parameters in `spec.parameters` and the DAX
 
 ### Validation Results
 
-`create_udf` and `update_udf` return a top-level `validation` object with `ok`, `state`, and `error_message` from TOM after the write. If Power BI saves the UDF but reports a non-ready state or an error message, the tool returns an error result and includes `saved_udf` so you can inspect the persisted object before retrying. Recoverable save anomalies can also appear as `warnings` alongside the validation payload.
+`create_udf` and `update_udf` return a top-level `validation` object with `ok`, `state`, and `error_message` from TOM after the write. If Power BI saves the UDF but reports a non-ready state or an error message, the tool returns an error result and includes `saved_udf`. The mutation outcome remains `applied`: inspect the saved object and correct it with a new update; do not repeat the original create or update.
+
+Each UDF mutation makes one commit attempt. SemanticOps never refreshes metadata and replays the write:
+
+- `not_applied` means the commit was not applied and the outcome explicitly says whether retrying is safe.
+- `applied` means the write committed, even when validation or read-back reports a problem. Do not repeat the original request.
+- `unknown` means the commit response was ambiguous. Inspect the selected model, UDF list, and operation history before deciding on a new action; never retry the original request automatically.
+
+Transactional bulk requests plan, approve, and commit all UDF changes once. Non-transactional batches are approved once, commit each item once, and stop after the first `unknown` outcome.
 
 ### Creating with AnyRef Parameter
 

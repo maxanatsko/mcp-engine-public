@@ -180,3 +180,24 @@ Example (`manage_schema` create partition):
   ]
 }
 ```
+
+Bulk named-expression writes use the same guarded model-write lifecycle as
+single writes:
+
+- `dry_run=true` parses every item and projects the resulting model state, but
+  does not request approval or commit.
+- `transaction=true` (the default) projects the complete batch, rejects
+  duplicate/conflicting targets before approval, requests approval once, and
+  commits the compatibility upgrade and all expression changes once.
+- `transaction=false` gives each item its own write lifecycle. A known
+  not-applied failure continues only when mandatory audit finalization is
+  complete. An unknown commit outcome or incomplete audit finalization stops
+  the batch because continuing or replaying may duplicate an applied change or
+  bypass a fail-closed audit control.
+- An update whose requested state already matches the named expression is a
+  successful no-op. It does not request approval or commit.
+
+Every write response includes `operation_outcome`. If
+`model_mutation="unknown"` or an applied write reports a post-commit projection
+failure, do not repeat the request. Follow the reported recovery action and
+inspect the model and model-change history first.

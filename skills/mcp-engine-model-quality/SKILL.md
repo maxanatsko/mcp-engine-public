@@ -1,6 +1,6 @@
 ---
 name: mcp-engine-model-quality
-description: Assess Power BI semantic models for bad or questionable modeling practices and produce a source-backed quality scorecard. Use when reviewing model quality, semantic model assessment, semantic model best practices, star schema fit, relationships, DAX maintainability, VertiPaq/storage risk, metadata hygiene, governance signals, validation gaps, or when the user asks for a scorecard, recommendations, model audit, model quality review, bad practices review, best practices audit, or best practices assessment.
+description: Use when the user asks for a model audit, model quality review, scorecard, bad-practices or best-practices assessment, or a review of star-schema fit, relationships, DAX maintainability, VertiPaq/storage risk, metadata hygiene, governance signals, or validation gaps in a Power BI semantic model. For diagnosing one slow query, use mcp-engine-dax-performance; for Copilot or natural-language readiness, use mcp-engine-ai-readiness; to execute the remediation backlog, use mcp-engine-refactoring.
 ---
 
 # PBI Model Quality

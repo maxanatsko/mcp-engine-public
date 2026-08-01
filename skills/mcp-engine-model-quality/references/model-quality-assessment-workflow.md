@@ -12,13 +12,13 @@ Use this workflow to assess a connected Power BI semantic model for bad or quest
 - Related resources:
   - `model-quality-scorecard.md`
   - `model-quality-rulebook.md`
-  - `../../mcp-engine-semantic-authoring/references/modeling-best-practices-guide.md`
-  - `../../mcp-engine-schema-authoring/references/relationships-guide.md`
-  - `../../mcp-engine-semantic-authoring/references/measure-authoring-guide.md`
-  - `../../mcp-engine-semantic-authoring/references/semantic-layer-style-guide.md`
-  - `../../mcp-engine-security-governance/references/security-roles-guide.md`
-  - `../../mcp-engine-security-governance/references/perspectives-guide.md`
-  - `../../mcp-engine-query/references/vertipaq-optimization-guide.md`
+  - `modeling-best-practices-guide.md (from the mcp-engine-semantic-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+  - `relationships-guide.md (from the mcp-engine-schema-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+  - `measure-authoring-guide.md (from the mcp-engine-semantic-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+  - `semantic-layer-style-guide.md (from the mcp-engine-semantic-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+  - `security-roles-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+  - `perspectives-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+  - `vertipaq-optimization-guide.md (from the mcp-engine-dax-performance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
 
 ## Operating Rules
 

@@ -27,6 +27,8 @@ Use this rubric to make semantic model quality reviews comparable across models.
 - Medium finding: subtract 2-5 points
 - Low finding: subtract 1 point
 
+Use the midpoint of the severity range by default (critical 16, high 8, medium 3). Move toward the low or high end only for specific stated evidence, and name that reason in the finding, so repeated assessments of the same model land on the same score.
+
 Do not let one category consume the entire score. Cap ordinary deductions per category at the category weight. You may exceed the category cap only when a critical defect makes broad model use unsafe, and you must explain why.
 
 ## Severity Definitions

@@ -16,6 +16,7 @@ Important:
 - MCP hosts may not support elicitation/confirmation consistently enough for server-side enforcement.
 - `MCP_ENGINE_DISABLE_ELICITATION=true` disables interactive confirmation prompts for the process and makes policy confirmation behave like an unsupported client.
 - For locked-down deployments that disable elicitation, also set `MCP_ENGINE_POLICY_CONFIRMATION_UNSUPPORTED=deny` if `require_confirm` rules must fail closed instead of proceeding.
+- Local policy processing defaults to `fail_closed`. Use `MCP_ENGINE_POLICY_FAIL_MODE=fail_open` only for development scenarios where continuing without a fully evaluated local policy set is acceptable.
 - Local/user-authored `deny` rules cannot target `manage_policy` or `manage_policy_ui`. Use `require_confirm` for policy approval workflows.
 - Admin lockdown of policy changes comes from bundle/config controls, not ordinary local policy rules.
 
@@ -67,6 +68,8 @@ Pack IDs are the apply-able bundle namespace for `packs_apply`. They are distinc
 Notes:
 - Use canonical `spec.pack_id`.
 - `spec.pack_id` must come from `packs_list`, not from `recipes`.
+- Preview resolves the selected scope and current store, then runs the same full-store planner and validation as apply. It does not use an empty synthetic store.
+- A model-scoped preview resolves or provisions the model's stable policy identity before capturing the snapshot. This may create or backfill the model identity annotation after confirmation, but preview never persists policy rules.
 - `packs_apply` merges or updates pack-owned rules by ID prefix. It does not reset unrelated rules.
 - Re-applying a pack replaces that pack's existing `<packId>.*` rules with the current built-in definition set.
 - In read-only or admin-bundle-locked modes, `packs_apply` is limited to `dry_run=true`.
@@ -145,12 +148,80 @@ Example (JSON-in-string inspection through synthetic parsed fields):
 }
 ```
 
+### Store Schema, Ordering, and Migration
+
+Persisted local stores and Enterprise bundles use policy schema version `1.0`. The top-level `version`, `scope`, and `rules` fields must be present explicitly:
+
+- `version` must be exactly `"1.0"`.
+- A global store uses `"scope": "global"` and must omit `scopeId` or set it to `null`.
+- A model store uses `"scope": "model"` and its `scopeId` must exactly match the persisted model scope ID for that file.
+- `rules` must be an array. Every rule must be non-null and have a non-empty ID.
+- Rule IDs are unique case-insensitively within a store. For example, `block-delete` and `BLOCK-DELETE` conflict.
+- Rule-count and serialized-byte limits apply to the complete canonical store. Validation never drops invalid rules to make a store load.
+
+Rules are evaluated and displayed in one canonical order. Model scope precedes global scope. Within each scope, lower numeric priority values run first; equal-priority rules retain their persisted array order. Administration list and pack preview output include disabled rules in that same stable order, while evaluation skips disabled rules.
+
+`import` continues to accept the portable rules-only envelope `{ "rules": [...] }`. Omitted metadata is filled from the selected target. If an import supplies `version`, `scope`, or `scopeId`, each value must match version `1.0` and the selected target exactly; imported metadata never overrides the target.
+
+There is no automatic policy migration. Before upgrading an older or manually edited store, keep a backup, add the required metadata, set `version` to `1.0`, correct the scope metadata, and remove case-insensitive duplicate IDs. Invalid local stores are rejected atomically and follow the configured fail-open/fail-closed recovery path; invalid bundles retain bundle lockdown behavior.
+
+### Administration Generations and Mutation Plans
+
+`status`, `list`, and `get` include `generation`, and each response is projected from one coherent runtime snapshot. In particular, model identity and model rules come from the same generation; administration does not resolve connection/model state a second time while formatting the response.
+
+Successful mutations and pack previews include:
+
+```json
+{
+  "plan": {
+    "source_generation": 12,
+    "result_generation": 13,
+    "added_ids": ["new-rule"],
+    "updated_ids": [],
+    "removed_ids": []
+  }
+}
+```
+
+For previews, `result_generation` is `null` because no policy store is committed. A commit persists the exact validated candidate and timestamp produced by the planner. If the policy generation or selected model changes before persistence, the server rejects the candidate with nested `error.code="POLICY_PLAN_STALE"`, includes `expected_generation`, `actual_generation`, and `retryable=true`, and does not retry or overwrite the intervening state.
+
+Policy administration, runtime denial, confirmation, and processing failures use the shared nested `error.code` / `error.message` envelope. Unexpected administration exceptions are sanitized. Request cancellation propagates instead of being converted to a policy error.
+
 ### Policy Control Plane Protection
 
 - Local `deny` rules targeting `manage_policy` or `manage_policy_ui` are rejected by `validate`, `put`, and `import`.
 - Wildcard patterns that would match `manage_policy*` (for example `manage_*`) are also rejected for local `deny` rules.
 - Local `allow` and `require_confirm` rules for `manage_policy*` remain valid.
-- If older local policy files already contain forbidden `deny` rules for `manage_policy*`, those rules are skipped when the store is loaded.
+- If any rule in a local store is invalid, the entire affected store is rejected atomically. No valid subset is published.
+
+### Local Failure Behavior
+
+`MCP_ENGINE_POLICY_FAIL_MODE` accepts `fail_closed` (default) or `fail_open`. Invalid explicit values fail server startup.
+
+Policy configuration is parsed and validated once during startup. Values are trimmed; documented enum values are case-insensitive; unlisted aliases and explicitly empty values are rejected. Defaults apply only when an environment variable is absent. Numeric bounds are inclusive:
+
+| Environment variable | Default | Minimum | Maximum |
+|---|---:|---:|---:|
+| `MCP_ENGINE_POLICY_MAX_RULES` | 100 | 1 | 10,000 |
+| `MCP_ENGINE_POLICY_MAX_ID_LENGTH` | 100 | 1 | 1,024 |
+| `MCP_ENGINE_POLICY_MAX_MESSAGE_LENGTH` | 500 | 1 | 32,768 |
+| `MCP_ENGINE_POLICY_MAX_DESC_LENGTH` | 500 | 1 | 32,768 |
+| `MCP_ENGINE_POLICY_MAX_TOOL_LENGTH` | 100 | 1 | 1,024 |
+| `MCP_ENGINE_POLICY_MAX_TOTAL_BYTES` | 524,288 | 1 | 10,485,760 |
+| `MCP_ENGINE_POLICY_REGEX_TIMEOUT_MS` | 100 | 1 | 5,000 |
+| `MCP_ENGINE_POLICY_REGEX_MAX_LENGTH` | 200 | 1 | 4,096 |
+| `MCP_ENGINE_POLICY_MAX_NESTING_DEPTH` | 5 | 1 | 64 |
+
+`MCP_ENGINE_POLICIES_DIR` defaults to `~/.mcp-engine/policies`. Policy paths expand only a leading `~`, `~/`, or `~\`; embedded tildes are preserved. The directory is normalized and checked for writability during startup. `MCP_ENGINE_POLICY_BUNDLE_PATH` is optional and normalized at startup; invalid syntax fails with a sanitized filename-only error. A normalized path may refer to a missing file because existing bundle loading and lockdown behavior handles missing or unreadable bundles at runtime.
+
+- `fail_closed`: local read, JSON, I/O, storage-hardening, store/rule validation, condition, and required context-enrichment failures produce a `processing_failure` decision. Tool execution returns `POLICY_PROCESSING_FAILED`. Only `manage_policy` and `manage_policy_ui` remain available to inspect and repair local policy state.
+- `fail_open`: the affected local store contributes no rules, and condition/context failures are treated as non-matches. Evaluation continues through another valid scope and later unrelated rules. A later real rule can still allow, deny, or require confirmation while retaining structured failure metadata.
+
+Local store rejection is atomic per scope. A failed global store does not filter and publish its valid rules; a failed model store behaves the same way. Under explicit `fail_open`, another valid scope may still be evaluated. Enterprise bundle load failure keeps its separate lockdown behavior and recovery allowlist.
+
+`manage_policy` `operation="status"` reports `local_failure_mode`, `confirmation_unsupported_behavior`, `local_store_state`, and sanitized `local_store_failures`. `operation="evaluate"` reports `decision`, nullable `action`, and structured `processing_failures`. A processing failure has no synthetic rule ID, matched rule, or policy action.
+
+Policy audit entries add a redacted `_policy` annotation only when processing failures occur. It contains failure category/code, configured mode, and `blocked` or `proceeded`; it never contains filesystem paths, raw exception text, or tool arguments.
 
 ### Block Refresh Execution (Recipe)
 
@@ -166,6 +237,8 @@ Example (JSON-in-string inspection through synthetic parsed fields):
 ```json
 { "operation": "evaluate", "tool": "manage_semantic", "operation_value": "delete_measure" }
 ```
+
+Evaluation simulation resolves the same canonical tool security identity as runtime execution. For example, evaluating an app-internal `_ui` alias applies the policies of its published canonical tool while retaining the requested alias in the response.
 
 ## Built-in Packs
 
@@ -226,11 +299,13 @@ Policy conditions support:
 
 Condition JSON uses a `kind` discriminator (e.g., `{ "kind": "arg_equals", "field": "operation", "value": "delete" }`).
 
+For Power BI Desktop models on Windows, `model_path_pattern` uses case-insensitive, culture-invariant matching. Its `*` wildcard matches zero or more characters and `?` matches exactly one character. The condition does not normalize separators, resolve relative paths, or access the filesystem. Generic `arg_regex` and `arg_regex_not` conditions remain case-sensitive.
+
 Field paths:
 - `field` supports dot-notation for nested args (e.g., `spec.description`, `spec.format_string_expression`).
 - JSON-in-string arguments that contain an object or array are exposed under `parsed.<argName>` during policy evaluation.
 - Use `[]` to traverse arrays (for example, `parsed.data.rules[].action` or `parsed.data.scopes.global.settings[].id`).
-- If a rule references `parsed.<argName>` and that string fails to parse as JSON, policy evaluation follows the configured fail mode (`fail_open` or `fail_closed`).
+- If a rule references `parsed.<argName>` and that string fails to parse as JSON, policy evaluation records a context-enrichment failure and follows the configured failure mode.
 
 ### Dependency Facts (Evaluation-Only)
 
@@ -268,7 +343,7 @@ Bulk semantics:
 Failure semantics:
 - If dependency enrichment fails for a supported delete, any rule that dereferences `dependency.*` hits the normal condition-evaluation error path
 - `fail_open`: dependency-aware rules become non-matches and unrelated rules continue
-- `fail_closed`: the evaluation error denies through the normal fail-closed path
+- `fail_closed`: the evaluation returns a distinct `processing_failure` decision with no matched rule
 - Rules that do not reference `dependency.*` continue evaluating normally
 
 Example (deny delete when a measure still has dependents):

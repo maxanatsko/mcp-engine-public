@@ -8,7 +8,7 @@ This guide covers common table/column operations, data type gotchas, and schema-
 - `manage_schema`: Create/update field parameters (operations: `create_field_parameter`, `update_field_parameter`)
 - `manage_schema`: Create/update/delete/refresh partitions (operations: `create_partition`, `update_partition`, `delete_partition`, `refresh_partition`)
 - `manage_schema`: Create/delete source columns; update column properties; create/update/delete calculated columns (operations: `create_column`, `delete_column`, `update_column_properties`, `create_calc_column`, `update_calc_column`, `delete_calc_column`)
-- `manage_security`: Manage perspectives (operations: `create_perspective`, `update_perspective`, `delete_perspective`). Perspectives are presentation/curation features hosted on `manage_security` for backward compatibility; see `../../mcp-engine-security-governance/references/perspectives-guide.md`.
+- `manage_security`: Manage perspectives (operations: `create_perspective`, `update_perspective`, `delete_perspective`). Perspectives are presentation/curation features hosted on `manage_security` for backward compatibility; see `perspectives-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`.
 - `list_model`: Inspect current schema (`operation: "list"`, `spec: { type: "tables|columns|calculated_columns|partitions" }`). For columns, use `include_details: true` to include formatting metadata (`format_string`, `data_category`, `summarize_by`, `source_column`, etc.). For tables, `table_type` indicates `"calculated"` vs `"regular"`.
 - `list_model`: Find references before refactors (`operation: "search"`):
   - DAX: `spec: { mode: "dax", query: "..." }`
@@ -133,7 +133,7 @@ Example:
 
 Use `create_field_parameter` to create a Power BI field parameter table with the required calculated-table DAX and field-parameter metadata. Use `update_field_parameter` to replace the generated entries and reapply the metadata.
 
-Field parameter creation always runs a Calculate refresh so the generated columns exist before metadata is applied. `spec.process` is supported on `update_field_parameter` only; set it to `false` only when the table columns are already materialized and you want to skip recalculation.
+The calculated partition, complete `CalculatedTableColumn` schema, and field-parameter metadata are committed together before optional post-commit processing. Creation runs a Calculate refresh by default. `spec.process` is supported on `update_field_parameter` only; set it to `false` to skip that post-commit Calculate refresh.
 
 Basic example:
 

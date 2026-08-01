@@ -25,7 +25,8 @@ This guide explains how to measure DAX query performance and interpret results u
 Recommended defaults:
 
 - `runs`: 3–5 for a quick signal; 10+ for stabilizing noisy results
-- `clear_cache`: true when comparing alternatives
+- Desktop: set `clear_cache: true` when comparing alternatives, but call the runs cold-cache only when the response has no `clear_cache failed` limitation. If clearing fails, resolve it or start a separate run with `clear_cache: false`, discard run 1, and compare the median of runs 2..N; do not mix successful and failed cache-clear attempts.
+- Power BI Service XMLA: cache clearing is unavailable. With `runs >= 3`, the response records this limitation; discard run 1 as warm-up and compare the median of runs 2..N from `all_durations_ms`. Keep the query, run count, and connection kind identical between alternatives, and label the result warm-cache. The Storage Engine / Formula Engine metrics come from discarded run 1, so use them only for diagnostic triage, not as the warm baseline or before/after evidence.
 - `use_xevents`: true when available (best metrics)
 
 ## Interpreting Results

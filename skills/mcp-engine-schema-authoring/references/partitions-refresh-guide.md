@@ -188,6 +188,16 @@ Recommended for production-like models:
 
 For `manage_refresh` model scope, tables marked `exclude_from_model_refresh` are skipped by default for Desktop and Service/XMLA connections. Use `include_excluded: true` only when you explicitly intend to include them. Targeted table/partition refreshes do not apply this model-scope skip.
 
+### Execution outcomes and recovery
+
+Refresh execution validates the complete target plan before requesting first-write approval. After approval, SemanticOps revalidates the selected model and target identities, stages every target once, and makes one commit attempt.
+
+- `NotApplied` means no refresh was committed and rollback was proven. Correct the validation, approval, or cancellation cause before retrying.
+- `Applied` means the commit returned successfully. Do not replay the refresh if later finalization, history, notification, snapshot, audit, or response handling fails; inspect the model and recover the incomplete follow-up work.
+- `Unknown` means SemanticOps could not prove whether the commit applied, such as after a lost commit response or failed discard. Do not retry automatically; inspect the model and refresh history first.
+
+An explicit `manage_refresh` execution fails closed when Desktop history cannot be stored, but its outcome remains `Applied` after a successful commit. Schema-triggered history remains best-effort and surfaces a warning instead.
+
 ## Bulk Examples
 
 Bulk refresh multiple partitions:

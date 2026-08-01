@@ -1,0 +1,4 @@
+interface:
+  display_name: "PBI DAX Debugging"
+  short_description: "Diagnose wrong DAX results systematically"
+  default_prompt: "Use $mcp-engine-dax-debugging to find the root cause of this wrong or blank measure result and verify the fix."

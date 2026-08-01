@@ -1,45 +1,31 @@
 ---
 name: mcp-engine-query
-description: Write, review, scope, execute, and analyze DAX queries in Power BI models. Use when creating or fixing DAX queries, deciding between run_query operations, investigating performance or VertiPaq issues, testing RLS access, or discovering schema before querying.
+description: Use when writing or fixing DAX query text, choosing between run_query operations, validating results, testing RLS access for roles, or discovering schema before querying. For diagnosing why a query is slow, use mcp-engine-dax-performance; for wrong values, unexpected blanks, or inflated totals, use mcp-engine-dax-debugging; to persist logic as measures, use mcp-engine-semantic-authoring.
 ---
 
 # PBI Query
 
-Use this skill for query authoring and query analysis work. Read only the bundled references needed for the current task.
+Query authoring and execution through `run_query`.
 
 ## Query workflow
 
-1. Inspect schema before guessing table, column, or measure names.
-2. Decide whether the task is execution, performance analysis, VertiPaq inspection, or access testing.
-3. Keep the first query scoped and small enough to inspect safely.
-4. Expand only after the initial query shape is correct.
-
-## Choose the operation
-
-- Use `execute` when the user needs query results or a validation query.
-- Use `analyze` when the user needs timings, operator-level diagnosis, or performance findings.
-- Use `vertipaq` when the user needs storage footprint, table size, or cardinality clues.
-- Use `test_access` when the user needs role-by-role access validation.
+1. Discover schema first: `list_model` `{ "operation": "list", "spec": { "type": "tables" } }` — one call per type (`tables`, `columns`, `measures`, `relationships`; `spec.type` takes exactly one value) — or `{ "operation": "search", "spec": { "query": "<name>", "mode": "name" } }` for a named object. Never invent table, column, or measure names.
+2. Pick the `run_query` operation:
+   - `execute` — results and validation queries.
+   - `test_access` — role-by-role RLS validation (requires top-level `query` and `spec.roles`).
+   - `analyze` and `vertipaq` belong to performance work — hand off to `mcp-engine-dax-performance`.
+3. Keep the first `execute` scoped: `TOPN` of at most 100 rows with an explicit `ORDER BY`, or a targeted aggregation. Expand only after the shape is confirmed correct.
+4. Treat `null` in results as DAX `BLANK` semantics, and `truncated: true` as a row cap, not missing data.
 
 ## Author safely
 
-- Read [dax-query-guide](references/dax-query-guide.md) before writing new or corrected query text.
-- Prefer schema discovery with `list_model` before inventing names or relationships.
-- Keep the default query scoped with filters, `TOPN`, or targeted grouping.
-- Add ordering for multi-row outputs so results are stable and readable.
-- Treat nulls in result rows as query semantics until the model proves otherwise.
+- Read [dax-query-guide](references/dax-query-guide.md) before writing new or corrected query text — quoting, naming, and structure rules live there.
+- Add `ORDER BY` to any multi-row output so results are stable and comparable across runs.
 
-## Diagnose performance
+## Report results
 
-- Read [query-performance-guide](references/query-performance-guide.md) before interpreting timings or trace output.
-- Read [dax-query-plan-reference](references/dax-query-plan-reference.md) when a plan contains unfamiliar operators.
-- Read [vertipaq-optimization-guide](references/vertipaq-optimization-guide.md) when the issue looks like storage bloat or high-cardinality pressure.
-- Read [performance-remediation-playbook](references/performance-remediation-playbook.md) when the user wants a remediation sequence instead of isolated findings.
+After query work, report:
 
-## Reference selection
-
-- Read [dax-query-guide](references/dax-query-guide.md) first for syntax, quoting rules, and DAX query structure.
-- Read [query-performance-guide](references/query-performance-guide.md) for timings, runs, and performance interpretation.
-- Read [dax-query-plan-reference](references/dax-query-plan-reference.md) for plan operator definitions.
-- Read [vertipaq-optimization-guide](references/vertipaq-optimization-guide.md) for storage optimization guidance.
-- Read [performance-remediation-playbook](references/performance-remediation-playbook.md) for end-to-end tuning workflow.
+1. The exact DAX text run and the `run_query` operation used.
+2. Row count returned and whether results were truncated.
+3. The answer to the user's question, stated separately from raw output.

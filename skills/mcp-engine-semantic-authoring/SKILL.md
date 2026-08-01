@@ -1,54 +1,36 @@
 ---
 name: mcp-engine-semantic-authoring
-description: Author and refine Power BI semantic layer logic. Use when creating or updating measures, calculation groups, named expressions, DAX UDFs, Power Query parameters, model properties, or semantic naming and style patterns, and when deciding between measures and calculated columns.
+description: Use when creating or updating measures, KPIs, calculation groups, DAX UDFs, named expressions, Power Query parameters, or model properties, when deciding between a measure and a calculated column, or when cleaning up naming, display folders, and semantic style. For one-off DAX queries, use mcp-engine-query; for physical tables, columns, and relationships, use mcp-engine-schema-authoring; for consolidating or renaming measures with downstream consumers, use mcp-engine-refactoring.
 ---
 
 # PBI Semantic Authoring
 
-Use this skill for semantic-layer work that sits above physical schema shape. Read only the bundled references needed for the current semantic task.
+Semantic-layer work through `manage_semantic`. Read only the references needed for the current task.
 
 ## Decide the semantic path
 
-1. Decide whether the user needs a measure, calculated column alternative, calculation group, shared expression, model property update, or style cleanup.
-2. Prefer measures for reusable business logic unless persisted row-level attributes are required.
+1. Prefer a measure for reusable business logic. Choose a calculated column only when a persisted row-level attribute is required — creating one is a `manage_schema` `create_calc_column` operation covered by `mcp-engine-schema-authoring`.
+2. Ground names first: `list_model` `{ "operation": "list", "spec": { "type": "measures" } }` (repeat with `"tables"`; `spec.type` takes one value per call), and check for an existing equivalent with `{ "operation": "search", "spec": { "query": "<name>", "mode": "name" } }` before creating a near-duplicate measure.
 3. Keep semantic edits separate from table or relationship edits unless the task explicitly spans both.
 
 ## Branch by object type
 
-### Measures
-
-- Read [measure-authoring-guide](references/measure-authoring-guide.md) when creating, updating, formatting, or organizing measures.
-- Use [modeling-best-practices-guide](references/modeling-best-practices-guide.md) when deciding whether logic belongs in a measure or in model structure.
-
-### Calculation groups and DAX UDFs
-
-- Read [calc-groups-guide](references/calc-groups-guide.md) for reusable transformation patterns such as time intelligence and formatting changes.
-- Read [dax-udf-guide](references/dax-udf-guide.md) when the user wants reusable DAX function-style logic.
-
-### Named expressions and Power Query parameters
-
-- Read [named-expressions-guide](references/named-expressions-guide.md) for shared M expressions.
-- Read [power-query-parameters-guide](references/power-query-parameters-guide.md) when the task involves RangeStart, RangeEnd, or other Power Query parameter management.
-
-### Model properties and style
-
-- Read [model-properties-guide](references/model-properties-guide.md) when updating descriptions, culture, compatibility, annotations, or implicit-measure behavior.
-- Read [semantic-layer-style-guide](references/semantic-layer-style-guide.md) when the task is naming, folders, style consistency, or semantic cleanup across many objects.
+- Measures and KPIs (`create_measure`, `update_measure`, `create_kpi`): [measure-authoring-guide](references/measure-authoring-guide.md). When logic placement is unclear: [modeling-best-practices-guide](references/modeling-best-practices-guide.md).
+- Calculation groups (`create_calc_group`): [calc-groups-guide](references/calc-groups-guide.md). DAX UDFs (`create_udf`): [dax-udf-guide](references/dax-udf-guide.md).
+- Named expressions (`create_named_expression`): [named-expressions-guide](references/named-expressions-guide.md). Power Query parameters (`create_pq_parameter`, RangeStart/RangeEnd): [power-query-parameters-guide](references/power-query-parameters-guide.md).
+- Model properties (descriptions, culture, annotations, implicit-measure behavior): [model-properties-guide](references/model-properties-guide.md). Naming, folders, and style cleanup across many objects: [semantic-layer-style-guide](references/semantic-layer-style-guide.md).
 
 ## Guardrails
 
-- Prefer measure-first reasoning before introducing calculated columns.
-- Keep naming and foldering consistent with existing model conventions unless the user requests a deliberate change.
-- Validate major semantic edits with targeted queries after authoring.
-- Use the best-practices guide when the right home for logic is unclear.
+- Follow the model's existing naming and folder conventions unless the user requests a deliberate change.
+- Validate each new or changed measure with a scoped `run_query` `{ "operation": "execute", "query": "<query evaluating the measure>" }` in a realistic filter context.
+- Use `dry_run: true` and per-item identifiers for bulk semantic edits.
 
-## References
+## Report results
 
-- [measure-authoring-guide](references/measure-authoring-guide.md)
-- [calc-groups-guide](references/calc-groups-guide.md)
-- [named-expressions-guide](references/named-expressions-guide.md)
-- [dax-udf-guide](references/dax-udf-guide.md)
-- [power-query-parameters-guide](references/power-query-parameters-guide.md)
-- [model-properties-guide](references/model-properties-guide.md)
-- [semantic-layer-style-guide](references/semantic-layer-style-guide.md)
-- [modeling-best-practices-guide](references/modeling-best-practices-guide.md)
+After semantic work, report:
+
+1. Each object created or changed, with its DAX or M expression.
+2. Whether `dry_run` or bulk mode was used and the outcome.
+3. The validation query run and its result.
+4. Naming or folder decisions that follow (or deliberately break) model conventions.

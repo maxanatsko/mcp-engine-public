@@ -68,21 +68,26 @@ Common spec fields:
 - `target` (required): `{ id?, type, name?, table?, calculation_group?, from_table?, from_column?, to_table?, to_column? }`
   - `id`: optional canonical id (e.g., copied from `graph.nodes[].id`)
   - `type`: `table|calculated_table|measure|column|calculated_column|hierarchy|relationship|calculation_group|calculation_item|kpi|partition|named_expression|udf|role|perspective|culture|calendar|model_property`
+  - Type names and id prefixes must use the canonical singular values above. Plural aliases such as `measures` are rejected.
   - `table` is required for: `measure|column|calculated_column|partition|hierarchy|calendar|kpi`
   - `calculation_group` is required for `calculation_item`
   - `relationship` can be targeted via `id`, or via `from_table/from_column/to_table/to_column`
 - `scope` (expressions): `dax|m|partition|any` (default `any`)
+  - Calculated-table partition expressions are DAX owned by the calculated table, so they are scanned by `dax` and `any` and returned as `type="calculated_table"` with `mode="dax"`.
+  - `m` scans Power Query M partitions and named expressions. `partition` scans non-M, non-DAX Query and Entity partition expressions.
 - `depth`: transitive traversal depth (default `1`, max `4`)
 - `include_structural`: include exact (non-expression) edges (default `true`)
 - `include_metadata`: include metadata field matches as dependency edges (default `false`)
-- `include_fields` (metadata): `core|folders|formatting|members|security|annotations|translations|all` (default `["core"]`; `core` is always included)
+- `include_fields` (metadata): JSON string array containing `core|folders|formatting|members|security|annotations|translations|all` (default `["core"]`; `core` is always included)
 - `exclude_self_references`: when `include_metadata=true` and `target.type="table"`, omit metadata hits belonging to that table (default `false`)
 - Annotation noise controls (only apply when `include_fields` includes `annotations`):
   - `exclude_system_annotations`: `true|false` (default `true`)
-  - `annotation_prefix_exclude`: string array of annotation key prefixes to exclude (optional)
+  - `annotation_prefix_exclude`: JSON string array of annotation key prefixes to exclude (optional)
   - Default system filters include annotation names starting with `PBI_` / `TabularEditor_`, plus `SummarizationSetBy` and `PBI_FormatHint`.
 - `expand_metadata`: scan metadata while expanding traversal nodes (default `false`; root-only; does not add metadata fields to output items)
-- `types`: restrict dependent types returned (optional)
+- `types`: JSON string array that restricts dependent types returned in `groups`, rendered summaries, `total_matches`, and confidence-filter diagnostics (optional). Supported values are `table|calculated_table|measure|column|calculated_column|hierarchy|relationship|calculation_group|calculation_item|kpi|partition|named_expression|udf|role|perspective|culture|calendar|model_property|role_filter`. This is a result filter; traversal still expands eligible dependents of every type so transitive matches remain reachable.
+
+`types`, `include_fields`, and `annotation_prefix_exclude` accept arrays only. The tool rejects comma-separated strings, non-string array items, unknown type names, and undocumented aliases with `INVALID_DEPENDENCY_REQUEST`.
 - `case_sensitive`: `true|false` (default `false`)
 - `limit_per_type`: cap items returned per bucket (default comes from server config); groups set `truncated=true` when more items exist
 - Limits: `max_nodes`, `max_edges`, `max_expansions_per_node`
@@ -108,7 +113,8 @@ These appear in `graph.edges[]` with `mode="structural"` and a `kind` describing
 
 For DAX-capable targets, `included.calculation_dependency_source` explains how calculation dependencies were found:
 - `source`: `dmv`, `text_fallback`, or `text`.
-- `text_mode`: `supplementary` when text scanning is used alongside DMV exact edges, `fallback` when DMV access failed, `primary` when text scanning is the normal source, or `not_used`.
+- `text_mode`: `supplementary` when text scanning is used alongside DMV exact edges, `fallback` when DMV access failed, `primary` when text scanning is the normal source, `unavailable` when corpus acquisition failed and another source supplied the partial result, or `not_used` when no text scan was needed.
+- `text_reason` and `warning_messages`: sanitized source-selection or availability details; server-side logs retain the underlying exception for diagnosis.
 - `dmv_diagnostics`: DMV row counts (`total_rows`, `mapped_rows`, `skipped_rows`, `skipped_row_ratio`) plus whether expected skipped-row warnings were suppressed.
 
 Expected Analysis Services internal DMV rows are recorded in diagnostics without producing warnings. A skipped-row warning is emitted only when the skipped volume is unusually high.
@@ -126,6 +132,8 @@ Same analysis as `used_by`, plus optional rendering:
 Returns `graph.nodes[]` and `graph.edges[]` (directed “dependent -> dependency”), plus optional rendering:
 - `render`: `none|mermaid_flowchart|dot|csv_edges|csv_nodes`
 
+Graph nodes and edges preserve the complete bounded traversal even when `types` filters the returned groups. The graph can therefore include unrequested object types, including intermediate connector nodes needed to explain a path to a matching transitive dependent.
+
 CSV notes:
 - `csv_edges` includes extra columns for triage (`field_group`, `pattern`, `detail`, `match_context`).
 - `csv_nodes` includes extra columns (`calculation_group`, `role`, `partition_type`).
@@ -141,7 +149,7 @@ This tool is fast and practical, but not a full parser:
 
 ## Performance & Caching
 
-To keep repeated calls fast (especially during depth traversal), the server caches a per-model dependency corpus (expression index) for a short time and invalidates it on model reload/switch.
+To keep repeated calls fast (especially during depth traversal), the server caches a per-model dependency corpus (expression index) for a short time and invalidates it on model reload/switch. The exact DAX dependency map from `DISCOVER_CALC_DEPENDENCY` is queried once per applicable analysis request and is not controlled by the corpus cache settings below.
 
 Metadata note: `expand_metadata=true` can be expensive because it scans metadata for each expanded node; keep `depth` low and `include_fields` narrow.
 

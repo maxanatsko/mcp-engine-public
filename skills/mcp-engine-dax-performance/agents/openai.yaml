@@ -1,0 +1,4 @@
+interface:
+  display_name: "PBI DAX Performance"
+  short_description: "Tune slow DAX with measured evidence"
+  default_prompt: "Use $mcp-engine-dax-performance to baseline this slow query, diagnose the bottleneck, and verify the fix with a before/after comparison."

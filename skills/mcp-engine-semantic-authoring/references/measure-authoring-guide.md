@@ -5,7 +5,7 @@ This guide explains common patterns for creating, updating, and refactoring meas
 ## Related Tools
 
 - `manage_semantic`: Create/update/delete measures (operations: `create_measure`, `update_measure`, `delete_measure`)
-- `manage_security`: Manage perspectives (operations: `create_perspective`, `update_perspective`, `delete_perspective`) when you want curated measure/table subsets for report consumers. Perspectives live on `manage_security`; see `../../mcp-engine-security-governance/references/perspectives-guide.md`.
+- `manage_security`: Manage perspectives (operations: `create_perspective`, `update_perspective`, `delete_perspective`) when you want curated measure/table subsets for report consumers. Perspectives live on `manage_security`; see `perspectives-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`.
 - `list_model`: Inventory measures (`operation: "list"`, `spec: { type: "measures" }`)
 - `list_model`: Find dependencies by searching expressions (`operation: "search"`, `spec: { mode: "dax", query: "[MeasureName]" }`)
 - `run_query`: Validate results for key scenarios (`operation: "execute"`)

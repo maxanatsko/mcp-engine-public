@@ -1,6 +1,6 @@
 # Feature Setup Guide
 
-Use this guide as the source checklist for the onboarding concierge. It maps the Pro and Enterprise features from `Core/Licensing/ProFeatures.cs` to plain-language setup questions. Ask about each feature area when it needs a user choice or workflow preference. Mention passive helpers without pretending they are settings.
+Use this guide as the source checklist for the onboarding concierge. It maps the SemanticOps MCP Pro and Enterprise features to plain-language setup questions. Ask about each feature area when it needs a user choice or workflow preference. Mention passive helpers without pretending they are settings.
 
 ## Free Baseline
 
@@ -25,7 +25,7 @@ Check current tier first.
 Tool/docs surface:
 
 - `manage_license`
-- Wiki: `docs/wiki/tools/manage_license.mdx`
+- Wiki: https://semanticops.dev/wiki/tools/manage_license
 - Pricing: `/pricing`
 
 Approval requirement:
@@ -56,7 +56,7 @@ Read-only for shared models; full for local development.
 Tool/docs surface:
 
 - `manage_model_connection` current state
-- Wiki: `docs/wiki/concepts/modes-and-restrictions.mdx`
+- Wiki: https://semanticops.dev/wiki/concepts/modes-and-restrictions
 
 Approval requirement:
 
@@ -88,8 +88,8 @@ Tool/docs surface:
 - `manage_preferences`
 - Setting ID: `pii_masking_enabled`
 - `manage_schema` annotations: `McpEngine_PiiMasking=force|exclude`
-- `docs://pii-masking-guide`
-- Wiki: `docs/wiki/tools/manage_preferences-settings.mdx`
+- `pii-masking-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- Wiki: https://semanticops.dev/wiki/tools/manage_preferences-settings
 
 Approval requirement:
 
@@ -121,8 +121,8 @@ Tool/docs surface:
 - `manage_preferences`
 - Setting ID: `numeric_masking_enabled`
 - `manage_schema` annotations: `McpEngine_NumericMasking=force|exclude`
-- `docs://pii-masking-guide`
-- Wiki: `docs/wiki/tools/manage_preferences-settings.mdx`
+- `pii-masking-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- Wiki: https://semanticops.dev/wiki/tools/manage_preferences-settings
 
 Approval requirement:
 
@@ -154,7 +154,7 @@ Tool/docs surface:
 
 - `manage_preferences`
 - Pro feature: `preferences_model_scope`
-- Wiki: `docs/wiki/tools/manage_preferences.mdx`, `docs/wiki/tools/manage_preferences-scopes.mdx`, `docs/wiki/tools/manage_preferences-settings.mdx`
+- Wiki: https://semanticops.dev/wiki/tools/manage_preferences, https://semanticops.dev/wiki/tools/manage_preferences-scopes, https://semanticops.dev/wiki/tools/manage_preferences-settings
 
 Approval requirement:
 
@@ -186,8 +186,8 @@ Tool/docs surface:
 
 - `manage_policy`
 - Pro feature: `policy_enforcement`
-- `docs://policy-guide`
-- Wiki: `docs/wiki/tools/manage_policy.mdx`
+- `policy-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- Wiki: https://semanticops.dev/wiki/tools/manage_policy
 
 Approval requirement:
 
@@ -218,8 +218,8 @@ Tool/docs surface:
 
 - `manage_model_changes`
 - Pro feature: `model_changes`
-- `docs://model-changes-guide`
-- Wiki: `docs/wiki/tools/manage_model_changes.mdx`
+- `model-changes-guide.md (from the mcp-engine-testing-changes skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- Wiki: https://semanticops.dev/wiki/tools/manage_model_changes
 
 Approval requirement:
 
@@ -250,8 +250,8 @@ Tool/docs surface:
 
 - `manage_dependencies`
 - Pro feature: `dependencies`
-- `docs://dependencies-guide`
-- Wiki: `docs/wiki/tools/manage_dependencies.mdx`
+- `dependencies-guide.md (from the mcp-engine-testing-changes skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- Wiki: https://semanticops.dev/wiki/tools/manage_dependencies
 
 Approval requirement:
 
@@ -283,8 +283,8 @@ Tool/docs surface:
 
 - `manage_tests`
 - Pro feature: `unit_tests`
-- `docs://unit-testing-guide`
-- Wiki: `docs/wiki/tools/manage_tests.mdx`
+- `unit-testing-guide.md (from the mcp-engine-testing-changes skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- Wiki: https://semanticops.dev/wiki/tools/manage_tests
 
 Approval requirement:
 
@@ -316,7 +316,7 @@ Tool/docs surface:
 - `list_model` report operation
 - Pro feature: `model_reporting`
 - Dynamic resources: `pbi://docs/model`, `pbi://diagram/relationships`
-- Wiki: `docs/wiki/tools/manage_model_properties.mdx`, `docs/wiki/workflows/explore-and-understand.mdx`
+- Wiki: https://semanticops.dev/wiki/tools/manage_model_properties, https://semanticops.dev/wiki/workflows/explore-and-understand
 
 Approval requirement:
 
@@ -346,7 +346,7 @@ Tool/docs surface:
 
 - `run_query` parameters: `include_query_plan`, `include_timings`, `trace`
 - Pro feature: `advanced_tool_use`
-- Related resources: `docs://query-performance-guide`, `docs://dax-query-plan-reference`, `docs://vertipaq-optimization-guide`
+- Related resources: `query-performance-guide.md (from the mcp-engine-dax-performance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`, `dax-query-plan-reference.md (from the mcp-engine-dax-performance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`, `vertipaq-optimization-guide.md (from the mcp-engine-dax-performance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
 
 Approval requirement:
 
@@ -377,17 +377,17 @@ Tool/docs surface:
 - `manage_model_connection` effective user support
 - `run_query` under impersonation
 - Pro feature: `rls_effective_user`
-- `docs://security-roles-guide`
+- `security-roles-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
 
 Approval requirement:
 
 Do not set impersonation without explicit user identity and approval. Never invent identities.
 
-## Pro Prompts And Completions
+## Pro Prompts
 
 Plain-language explanation:
 
-Some Pro features are helpers rather than settings: better completions and built-in prompts. Guide documents are available to all tiers.
+Some Pro features are helpers rather than settings, including built-in prompts. Guide documents are available to all tiers.
 
 Ask:
 
@@ -405,7 +405,7 @@ Use them automatically when relevant and available.
 
 Tool/docs surface:
 
-- Pro features: `completions`, Pro prompts
+- Pro feature: built-in prompts
 - Prompts: `dax_best_practices`, `naming_conventions`, `security_guidelines`
 
 Approval requirement:
@@ -437,8 +437,8 @@ Tool/docs surface:
 
 - `manage_audit`
 - Enterprise feature: `audit_logging`
-- `docs://audit-logging-guide`
-- Wiki: `docs/wiki/tools/manage_audit.mdx`
+- `audit-logging-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- Wiki: https://semanticops.dev/wiki/tools/manage_audit
 
 Approval requirement:
 
@@ -469,8 +469,8 @@ Tool/docs surface:
 
 - `manage_policy` status
 - Enterprise feature: `admin_policy_bundle`
-- `docs://policy-guide`
-- Wiki: `docs/wiki/governance/org-deployment.mdx`
+- `policy-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- Wiki: https://semanticops.dev/wiki/governance/org-deployment
 
 Approval requirement:
 

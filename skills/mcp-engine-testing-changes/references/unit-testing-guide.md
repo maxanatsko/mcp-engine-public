@@ -7,7 +7,7 @@ This guide explains how to use the Pro Unit Testing feature to create, run, and 
 - `manage_tests`: Pro feature for creating, running, exporting, and transferring tests (14 operations)
 - `list_model`: Inspect model schema for test targets (`operation: "list"`)
 - `run_query`: Validate DAX queries before using in tests (`operation: "execute"`)
-- `manage_model_connection`: Connect to a model before running tests
+- `manage_model_connection`: Select the model that owns tests, baselines, and run history
 
 ## Test Types
 
@@ -30,14 +30,14 @@ This guide explains how to use the Pro Unit Testing feature to create, run, and 
 | Operation | Requires Model | Description |
 |-----------|----------------|-------------|
 | `capabilities` | Yes | Return environment capabilities |
-| `list` | No | List tests with filtering |
-| `get` | No | Get single test definition |
-| `put` | No | Create/update test |
-| `delete` | No | Remove test(s) |
+| `list` | Yes | List tests owned by the connected model |
+| `get` | Yes | Get a test definition owned by the connected model |
+| `put` | Yes | Create/update a test for the connected model |
+| `delete` | Yes | Remove test(s) owned by the connected model |
 | `run` | Yes | Execute tests |
 | `runs_list` | Yes | List persisted run history for the connected model |
-| `export` | No | Format results (json/junit/markdown/html) |
-| `export_tests` | No | Export portable test-definition bundles |
+| `export` | Yes | Format connected-model results (json/junit/markdown/html) |
+| `export_tests` | Yes | Export connected-model test-definition bundles |
 | `import_tests` | No (dry_run); Yes (apply) | Preview/apply portable test-definition bundles |
 | `snapshot` | Yes | Capture/list/delete baselines |
 | `validate` | No | Validate test definitions |
@@ -52,15 +52,45 @@ This guide explains how to use the Pro Unit Testing feature to create, run, and 
 When a model is connected, `manage_tests` associates tests, baselines, and run history with a **stable model id** stored in the model metadata as a TOM annotation:
 
 - Canonical annotation name: `McpEngine_StableModelId`
-- Legacy annotation name: `PowerBIMcp_StableModelId` (read for compatibility and backfilled to the canonical name during confirmed write-capable flows)
+- Legacy annotation name: `PowerBIMcp_StableModelId` (read during the 3.x compatibility window and backfilled to the canonical name during confirmed write-capable flows; the legacy reader is removed in 4.0.0)
 - Value: GUID string
 - Stored `model_id` in the test database: `stable:{guid}`
 
+After identity resolution, SemanticOps automatically migrates persisted tests, baselines, and run history from known legacy model IDs to the canonical identity in one transaction. Existing test, baseline, and run IDs are preserved; subsequent model-scoped operations query only the canonical identity. Until a Desktop model has a stable identity, read-only operations continue using the legacy database-name or port identity and do not migrate storage to the path-scoped fallback.
+
 This keeps unit tests tied to the same model even if the PBIX is renamed/moved (Desktop) or if the dataset display name changes (Service).
+
+Every persisted test definition, baseline, and run belongs to exactly one canonical model id. Test ids remain globally unique: a test id already owned by another model is reported as a conflict on write and behaves as not found on reads or deletes. There is no global/shared test scope and no ownership-transfer operation.
+
+`list`, `get`, `put`, `delete`, `run`, `runs_list`, `export`, `export_tests`, snapshot operations, and pack application require a connected model. `validate`, `packs_list`, and an `import_tests` schema preview (`dry_run: true`) can run while disconnected; applying an import requires an explicitly selected model.
 
 Note: the first persisted testing action for a model may write the `McpEngine_StableModelId` annotation into model metadata. That is a model change, and you need to save the PBIX if you want the annotation to persist.
 
 The Tauri test runner uses `runs_list` to hydrate persisted run history for the currently connected model. Run history remains server-side only; the UI does not keep a separate local history store.
+
+### Run stability
+
+`runs_list` preserves its existing response by default. Set `spec.include_stability` to `true` to add backend-owned stability classifications and retry evidence to the response. `spec.stability_window` defaults to `10` and must be at least `4`; `spec.limit` still controls how much persisted history is available, so a sparse or truncated history can remain insufficient.
+
+```json
+{
+  "operation": "runs_list",
+  "spec": {
+    "limit": 50,
+    "include_stability": true,
+    "stability_window": 10
+  }
+}
+```
+
+The opt-in response adds a top-level `stability` array. Each entry contains `test_id`, `test_name`, `classification`, evaluated `window`, `passed_on_retry_count`, and `alternation_count`. Classifications use the newest comparable same-definition segment:
+
+- `insufficient_history`: fewer than four comparable passed or failed results, including legacy, masked, or otherwise hashless history.
+- `flaky`: any passed-on-retry evidence, or another mixed pass/fail history not classified as degraded.
+- `stable`: every comparable result passed.
+- `degraded`: every comparable result failed, or the newest two results failed after earlier passes.
+
+Skipped, XFail, and error results do not count toward the window or alternations. A definition identity change stops comparison with older results. When masking is enabled, SemanticOps deliberately omits definition identities, so stability fails closed as `insufficient_history`. The internal `definition_hash` is never returned.
 
 ## Quick Start
 
@@ -124,27 +154,7 @@ Single-test `put` and `validate` accept the canonical nested test-definition sha
 }
 ```
 
-They also accept the advertised peer shape, where `assert` and `context` sit beside the root `spec` argument:
-
-```json
-{
-  "operation": "validate",
-  "spec": {
-    "id": "total-sales-positive",
-    "name": "Total Sales is positive",
-    "type": "measure_assertion",
-    "spec": { "measure": "Sales[Total Sales]" }
-  },
-  "assert": { "kind": "scalar", "op": "gt", "expected": { "type": "number", "value": 0 } },
-  "context": {
-    "filters": [
-      { "table": "Date", "column": "Year", "op": "eq", "values": [{ "type": "number", "value": 2026 }] }
-    ]
-  }
-}
-```
-
-Do not provide both nested `spec.assert`/`spec.context` and root peer `assert`/`context` in the same call. The server rejects conflicting shapes instead of choosing silently. Type-specific fields remain nested under the inner test-definition `spec`; for example use `spec.spec.measure` in the MCP argument envelope for `measure_assertion`, not root-level `measure`.
+The request-level `spec` is the complete test definition, including its `assert` and `context`. Request-root `assert` and `context` fields are rejected. Type-specific fields remain inside the definition's own `spec`; for example a `measure_assertion` put uses request `spec.spec.measure`.
 
 ### Bulk create/delete (items)
 
@@ -171,35 +181,13 @@ Do not provide both nested `spec.assert`/`spec.context` and root peer `assert`/`
       "assert": { "kind": "scalar", "op": "lte", "expected": { "type": "number", "value": 1000000 } }
     }
   ],
-  "transaction": true,
+  "stop_on_error": true,
   "dry_run": false,
   "include_items": false
 }
 ```
 
-Note: `transaction: true` is fail-fast bulk behavior. The handler stops on the first item error, but it does not wrap the batch in a single atomic rollback transaction.
-`total_items` reports the submitted `items` array length, even when fail-fast stops processing early.
-
-Bulk `put` also accepts per-item single-call shape when the test definition is nested under each item's `spec`.
-This is useful when each item has its own `target` fallback:
-
-```json
-{
-  "operation": "put",
-  "items": [
-    {
-      "target": "test-1",
-      "spec": {
-        "id": "test-1",
-        "name": "Example test",
-        "type": "measure_assertion",
-        "spec": { "measure": "Sales[Total Sales]" }
-      },
-      "assert": { "kind": "scalar", "op": "gte", "expected": { "type": "number", "value": 0 } }
-    }
-  ]
-}
-```
+`stop_on_error` defaults to `true`. It stops processing after the first item error but does not provide atomic rollback. Bulk responses report `total_items` as the submitted count, plus `processed_items`, `failed_items`, `stop_on_error`, `dry_run`, `results`, and `errors`.
 
 Bulk delete:
 
@@ -250,8 +238,8 @@ Important:
 - Put assertions in the top-level `assert` block, not inside `spec`.
 - Use `context.filters` for filtering. `spec.filter` is not supported.
 - Canonical `assert.expected` shape is a TypedValue object like `{ "type": "number", "value": 1250000 }`.
-- Raw scalar shorthand is also accepted for common handcrafted tests, for example `"expected": 1250000`, `"expected": "OK"`, or `"expected": true`. The server normalizes these to the canonical TypedValue shape when saving the test.
-- Canonical tolerance shape is `{"abs": <number>}` and/or `{"rel": <number>}`. Plain numeric tolerance may be normalized on input, but stored tests use `abs`/`rel`.
+- `assert.expected` must use the TypedValue object shape.
+- Tolerance uses `{"abs": <number>}` and/or `{"rel": <number>}`.
 
 ### dax_assertion
 
@@ -283,7 +271,7 @@ Important:
 - `context.filters` is not supported for `dax_assertion`; encode filter context directly in the query text.
 - If the query returns multiple columns, set `assert.path` to the first-row column name to compare.
 - v1 is scalar-only: without `assert.path`, the query must return a single-row, single-column result.
-- `assert.expected` uses the same canonical TypedValue shape as `measure_assertion`; raw number/string/boolean literals are accepted and normalized on save.
+- `assert.expected` uses the same canonical TypedValue shape as `measure_assertion`.
 
 ### rls_validation
 
@@ -306,10 +294,11 @@ Test that RLS roles filter data correctly:
       "mode": "matrix"
     },
     "assert": {
-      "kind": "table",
-      "op": "row",
-      "path": ["rows"],
-      "per_principal": { "max": 10000 }
+      "kind": "rls",
+      "expectations": [
+        { "role": "SalesRole", "op": "row_count_max", "max": 10000 },
+        { "role": "ManagerRole", "op": "query_succeeds" }
+      ]
     }
   }
 }
@@ -320,8 +309,7 @@ The impersonated identity must also have both Read and Build permission on the s
 Current scope:
 - RLS principals must use `{ "role": "RoleName" }` or `{ "role": "RoleName", "identity": "user@contoso.com" }`.
 - Do not use `{ "kind": "role", "name": "RoleName" }`; `kind` and `name` are not supported principal fields for `rls_validation`.
-- Legacy row-bounds assertions remain supported via `kind: "table"`, `op: "row"`, optional `path`, and `per_principal` min/max bounds.
-- Canonical direct assertions use `kind: "rls"` with one expectation per principal.
+- RLS assertions use `kind: "rls"` with exactly one expectation per principal. Omitted `kind` is normalized to `rls`.
 - Supported canonical operators are `query_succeeds`, `query_fails`, `is_blank`, `is_not_blank`, `equals`, `row_count_equals`, `row_count_min`, `row_count_max`, and `row_count_between`.
 - `equals`, `is_blank`, and `is_not_blank` require `assert.path`.
 - `query_fails` may include `error_contains`.
@@ -426,7 +414,7 @@ Cold and warm run behavior:
 - If cache clearing fails or is unavailable, the affected cold iteration still runs and is reported in safe diagnostics as `cache_cleared: false`; interpret that timing as warm-cache.
 - Budgets with cold runs consume the `cache_control` capability when supported, regardless of which timing thresholds are asserted; unsupported cache control is surfaced in assertion diagnostics as `cache_cleared: false`.
 - When a run includes a supported `cache_control` test, the runner executes the batch sequentially so other DAX-running tests cannot warm the model cache between clear and measurement.
-- Supported `cache_control` runs are also isolated per model across concurrent `manage_tests` runs so another task-backed test run cannot warm the model cache while cold measurements are in progress.
+- Supported `cache_control` runs remain isolated because each engine host executes at most one `manage_tests` run at a time, so another task-backed run cannot warm the model cache while cold measurements are in progress.
 - Warm-only budgets (`spec.runs.cold: 0`) do not require `cache_control` and run unchanged on Service.
 
 ### regression_snapshot
@@ -532,11 +520,9 @@ Available rules:
   - no params: assert that the model has some marked date table or non-system modern calendar
   - with `params.table`: assert that a specific table is the marked date table or owns a non-system modern calendar
 
-Discovery and aliases:
-- `operation: "capabilities"` returns `metadata_compliance.rules` with the built-in rule catalog, `metadata_compliance.entity_types`, canonical `assertion_list_field: "rules"`, and accepted aliases.
-- `spec.rules` is the canonical assertion list field.
-- `spec.checks` is accepted as an alias for `metadata_compliance` and is normalized to `spec.rules` when tests are saved.
-- Shorthand rules such as `{ "id": "local-id", "type": "require_format_string", "object_types": ["measure"] }` are accepted and normalized to the matching built-in rule id and scope.
+Discovery:
+- `operation: "capabilities"` returns `metadata_compliance.rules` with the built-in rule catalog, `metadata_compliance.entity_types`, and canonical `assertion_list_field: "rules"`.
+- `spec.rules` is the assertion list field. `spec.checks` and shorthand rule types are rejected.
 
 Example:
 
@@ -589,7 +575,7 @@ When a model is connected, each returned pack includes `applied`, `applied_test_
 { "operation": "packs_apply", "spec": { "pack_id": "metadata-quality" } }
 ```
 
-Use canonical `spec.pack_id`. The alias `spec.pack` may be normalized on input, but prompts and saved examples should use `pack_id`.
+`spec.pack_id` is required; `spec.pack` is rejected.
 
 | Pack ID | Generated Tests |
 |---------|-----------------|
@@ -607,6 +593,10 @@ Notes:
 ---
 
 ## Running Tests
+
+Each engine host executes at most one model-bound test operation at a time. Runs, snapshot capture, test bundle export, connected pack list/application, connected import preview/application, and valid `put` mutations acquire one model-session lease before resolving the canonical model scope and hold it through their final model-derived response or persistence step. A queued operation therefore resolves its model only after it acquires the lease; callers waiting for another operation may cancel their request without blocking later work.
+
+While a protected test operation owns the lease, `manage_model_connection` operations that would replace or alter its session (`select`, `reload`, `sign_out`, and `set_impersonation`, including clearing impersonation) fail immediately with `code: "test_run_in_progress"`, `retryable: true`, and an instruction to retry after the operation finishes. Read-only discovery and status operations remain available. Storage-only test history, baseline, and catalog operations retain ordinary concurrency; separate engine hosts remain independent; and the `parallelism` option continues to control concurrent tests within an active run.
 
 ### Run all tests
 
@@ -632,13 +622,15 @@ Notes:
 { "operation": "run", "spec": { "test_ids": ["total-sales-2024", "yoy-performance"] } }
 ```
 
-Use canonical `spec.test_ids`. The alias `spec.ids` is accepted for compatibility, but prompts and saved examples should use `test_ids`.
+Use `spec.test_ids`; `spec.ids` is rejected.
 
 ### Stop on first failure
 
 ```json
 { "operation": "run", "spec": { "stop_on_first_failure": true } }
 ```
+
+When enabled, the run stops after the first failed assertion or execution error. Within-run parallelism is disabled so the stopping point and returned result order remain deterministic. Passed, skipped, and expected-failure (`xfail`) results do not stop the run.
 
 ### Diagnostics levels
 
@@ -698,6 +690,8 @@ Notes:
 ## Transferring Test Definitions
 
 Use `export_tests` and `import_tests` for portable test-definition bundles. Bundles contain test definitions only: no run history, no snapshot baselines, and no persisted model identity. Imported tests are saved against the currently connected model so the same bundle can be reused across Desktop and Service models.
+
+When upgrading a legacy test database, SemanticOps exports any global definitions before removing them. The recovery bundle is written to the configured tests export/import root as `global-tests-recovery-<timestamp>.json` with user-only local permissions (beside `tests.db` when no separate export root is configured). Connect to the intended destination model, review the bundle, then apply it with `import_tests`; recovery definitions are never silently assigned to a model.
 
 Bundles include full `spec`, `assert`, and `context` payloads. If masking is enabled, `export_tests` requires `spec.include_sensitive=true` as an explicit opt-in. Large inline bundles are saved to the configured tests export root and return `saved_to` with `content_omitted: true`.
 
@@ -784,7 +778,7 @@ Import modes:
 Validation notes:
 - Schema-invalid tests and malformed bundles block import.
 - Model-reference checks are warnings only. For example, missing measures, roles, tables, or columns do not block the bundle from being previewed or applied.
-- Existing ids owned by another model or global/shared test row are not overwritten by `add_update`; use a new test id or `add_skip` to leave the existing row unchanged.
+- Existing ids owned by another model are not overwritten by `add_update`; use a new test id or `add_skip` to leave the existing row unchanged.
 - `read_from_path` uses the same export-root policy as `save_to_path`: relative paths resolve under `MCP_ENGINE_TESTS_EXPORT_ROOT` when set, otherwise under the managed tests directory.
 
 ---
@@ -837,7 +831,7 @@ Valid snapshot `spec.sub_operation` values:
 - `delete`: delete a baseline by `baseline_id`
 
 Snapshot notes:
-- Set `spec.sub_operation` explicitly, or use `spec.action` as an alias. `create` and `save` are not valid snapshot sub-operations.
+- Set `spec.sub_operation` explicitly. `spec.action`, `create`, and `save` are rejected.
 - `capture` and `list` require `test_id`.
 - `delete` requires `baseline_id`.
 
@@ -954,8 +948,13 @@ Tests with unmet `requires` are skipped with a reason and workaround:
 ## Masking Compatibility
 
 When numeric/PII masking is enabled:
+- `get` returns identification fields but sets `context`, `spec`, and `assert` to null and omits `meta.owner` unless `spec.include_sensitive=true` is explicitly supplied
 - Assertions evaluate on raw values internally (stable behavior)
-- Tool output omits `expected`/`actual` values
+- Run results omit assertion `expected`/`actual` values and replace non-null assertion messages with stable pass/fail text
+- Value-bearing `error_message` details are replaced with stable status text; only the known-safe `Test execution timed out` and `Test execution failed` infrastructure messages remain unchanged
+- Run identifiers, model and test identifiers, timestamps, summary, durations, assertion kind/status, and capability diagnostics remain available
+- Known skip categories and built-in capability identifiers remain available as stable guidance; arbitrary categories and capability names are removed, skip messages are replaced with stable type-based masked text (except the exact known-safe `Test is disabled` message), and all workarounds are cleared
+- Newly executed runs are projected before persistence, and stored history is projected again on list and JSON/JUnit/Markdown/HTML export so older or unmasked sidecar-created records are safe to read from a masking-enabled host
 - `diagnostics_level: full` is blocked
 - Snapshot modes `topn`/`full` are blocked unless `allow_sensitive_storage: true`
 

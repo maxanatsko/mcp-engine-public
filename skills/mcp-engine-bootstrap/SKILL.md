@@ -1,51 +1,36 @@
 ---
 name: mcp-engine-bootstrap
-description: Prepare and recover Power BI SemanticOps MCP sessions. Use when starting a session, connecting to a model, checking current connection, applying preferences, selecting the right tool family, troubleshooting empty results or stale metadata, or fixing malformed tool arguments and bulk payloads.
+description: Use when starting a SemanticOps MCP session, connecting to a Power BI model, checking the current connection, applying saved preferences, composing bulk or write payloads, or recovering from empty results, stale metadata, or argument validation errors. For task work after the session is healthy, use the matching mcp-engine skill (query, schema-authoring, semantic-authoring, testing-changes, security-governance).
 ---
 
 # PBI Bootstrap
 
-Use the bundled references in this skill as the working documentation for session setup and recovery.
+Session setup and recovery for SemanticOps MCP. Use the bundled references as the working documentation.
 
 ## Quick Start
 
-1. Check the current connection state first.
-2. If no model is connected, list available models or service workspaces and wait for user choice before selecting.
-3. Apply portable preferences before doing substantial work.
-4. Read the payload conventions reference before composing non-trivial write or bulk requests.
-5. If a tool returns empty or stale results, switch to the troubleshooting workflow before retrying.
+1. Check the connection: `manage_model_connection` `{ "operation": "get_current" }`.
+2. If no model is connected — Desktop: `{ "operation": "list" }`, present the choices, then `{ "operation": "select", "model_id": "<model_id>" }` with the user's pick. Service: `{ "operation": "authenticate", "source": "service" }` first when needed, then `{ "operation": "list_workspaces" }` for the workspace choice, then `{ "operation": "list", "source": "service", "workspace": "<workspace>" }` to list its datasets, and finally `select` with the returned `model_id` (workspaces themselves are not selectable).
+3. Load saved preferences with `manage_preferences` `{ "action": "list", "resource": "rendered" }` and apply them within their stated trust boundary.
+4. Read [tool-invocation-conventions](references/tool-invocation-conventions.md) before composing any non-trivial write or bulk request.
+5. If a tool returns empty or stale results, switch to [troubleshooting-guide](references/troubleshooting-guide.md) before retrying.
 
-## Workflow
+## Route to the right tool family
 
-### Connect first
+- `list_model` (`list`, `search`, `analyze`, `info`, `report`) for discovery, search, previews, and metadata inspection.
+- `run_query` (`execute`, `analyze`, `vertipaq`, `test_access`) for DAX execution, performance analysis, storage inspection, and RLS checks.
+- Write tools (`manage_schema`, `manage_semantic`, `manage_security`) only after the target object and operation are explicit.
+- Once connected and healthy, hand off to the task skill: query authoring → `mcp-engine-query`; slow queries → `mcp-engine-dax-performance`; wrong values → `mcp-engine-dax-debugging`; tables, columns, relationships, partitions → `mcp-engine-schema-authoring`; measures and calc groups → `mcp-engine-semantic-authoring`; multi-object refactors → `mcp-engine-refactoring`; tests, checkpoints, rollback → `mcp-engine-testing-changes`; RLS, policy, masking, audit → `mcp-engine-security-governance`. If a named skill is not installed, continue with the tool's `inputSchema` or ask the user to add it.
 
-- Start with the connection tool and confirm whether a model is already selected.
-- If multiple models are available, present the choices instead of auto-selecting.
-- If the user is on Power BI Service, authenticate before listing service resources when needed.
-- Re-check the current connection before using model-dependent tools.
+## Guard bulk and write requests
 
-### Route to the right tool family
-
-- Use `list_model` for discovery, search, previews, and model metadata inspection.
-- Use `run_query` for DAX execution, performance analysis, VertiPaq inspection, and RLS query checks.
-- Use write tools only after the target object and operation are explicit.
-- Use the testing or changes workflows before broad refactors or risky edits.
-
-### Guard bulk and write requests
-
-- Read [tool-invocation-conventions](references/tool-invocation-conventions.md) before composing any bulk payload.
 - Keep `transaction`, `dry_run`, `include_items`, and `include_details` as top-level request controls.
-- Put per-item identifiers and `spec` values inside each item rather than assuming inheritance.
-- Confirm destructive intent before submitting deletes, renames, broad refreshes, or model-wide rewrites.
+- Put per-item identifiers and `spec` values inside each item; items do not inherit from the request.
+- Confirm destructive intent before deletes, renames, broad refreshes, or model-wide rewrites.
 
-### Recover from common failures
+## Recover from common failures
 
-- Read [troubleshooting-guide](references/troubleshooting-guide.md) when connection state looks wrong, metadata is stale, or argument validation fails.
-- Reload metadata before retrying after external model changes.
-- Broaden discovery before assuming an object is missing.
-- Fix key names and argument shape issues before changing business logic.
-
-## References
-
-- [tool-invocation-conventions](references/tool-invocation-conventions.md) — payload shapes, bulk rules, pagination, and naming
-- [troubleshooting-guide](references/troubleshooting-guide.md) — connection recovery, stale metadata, and argument mistakes
+- Wrong or stale connection state: re-check with `{ "operation": "get_current" }`, then `{ "operation": "reload" }` after external model changes.
+- Object seems missing: broaden discovery with `list_model` `{ "operation": "search", "spec": { "query": "<object name>", "mode": "name" } }` (`spec.query` is required) before concluding it does not exist.
+- Argument validation errors: fix key names and payload shape per [tool-invocation-conventions](references/tool-invocation-conventions.md) before changing business logic.
+- Full recovery flows: [troubleshooting-guide](references/troubleshooting-guide.md).

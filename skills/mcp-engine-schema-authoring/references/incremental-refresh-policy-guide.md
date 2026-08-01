@@ -7,7 +7,7 @@ This guide explains how to configure and troubleshoot incremental refresh polici
 - `manage_schema`: Set or clear a refresh policy (`operation: "update_table"`)
 - `manage_schema`: Refresh partitions after policy changes (`operation: "refresh_partition"`)
 - `list_model`: Inspect partitions created by incremental refresh (`operation: "list"`, `spec: { type: "partitions" }`)
-- `manage_semantic`: Manage Power Query parameters (`operation: "create_pq_parameter|update_pq_parameter"` - RangeStart/RangeEnd must exist; see ../../mcp-engine-semantic-authoring/references/power-query-parameters-guide.md)
+- `manage_semantic`: Manage Power Query parameters (`operation: "create_pq_parameter|update_pq_parameter"` - RangeStart/RangeEnd must exist; see power-query-parameters-guide.md (from the mcp-engine-semantic-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill))
 
 ## Prerequisites
 

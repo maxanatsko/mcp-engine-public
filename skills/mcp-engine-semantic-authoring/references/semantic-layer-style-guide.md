@@ -337,4 +337,4 @@ Before shipping a model update:
 - [ ] Internal/helper objects are hidden
 - [ ] Security roles tested (if applicable)
 - [ ] Field parameters documented and tested (if applicable)
-- [ ] Model changes reviewed via `../../mcp-engine-testing-changes/references/model-changes-guide.md`
+- [ ] Model changes reviewed via `model-changes-guide.md (from the mcp-engine-testing-changes skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`

@@ -1,6 +1,6 @@
 ---
 name: mcp-engine-onboarding
-description: Guide new SemanticOps MCP users through a plain-language setup concierge for licensing, modes, masking, guardrails, preferences, model safety, tests, reporting, diagnostics, RLS testing, and Enterprise posture. Use when a user types onboarding, asks to set up SemanticOps MCP, wants help choosing Free vs Pro, or wants MCP tailored to their workflow.
+description: Use when a user types onboarding, asks to set up SemanticOps MCP, wants help choosing Free vs Pro, or wants licensing, modes, masking, guardrails, preferences, model safety, tests, reporting, diagnostics, RLS testing, or Enterprise posture tailored to their workflow. For changing security, policy, or masking on an already-configured server, use mcp-engine-security-governance.
 ---
 
 # PBI Onboarding
@@ -11,7 +11,7 @@ Use this skill to turn "onboarding" into a regular-user setup concierge. This is
 
 1. Start with: "I'll ask a series of questions to tailor your SemanticOps MCP setup."
 2. Speak to regular users. Avoid jargon like CRUD, AST, resource/action, internal feature, or raw payload unless the user asks.
-3. Use `Core/Licensing/ProFeatures.cs` as the source-of-truth checklist for Pro and Enterprise coverage.
+3. Use [feature-setup-guide](references/feature-setup-guide.md) as the source-of-truth checklist for Pro and Enterprise coverage.
 4. Ask one feature-area question at a time. Explain the feature, give examples, offer choices, recommend a default, and say what would be changed, previewed, or deferred.
 5. Check current license, mode, connection, preferences, and policy state when SemanticOps MCP tools are available.
 6. Produce a setup action plan before any activation, write, pack application, model selection, validation query, test creation, checkpoint, report generation, or audit operation.

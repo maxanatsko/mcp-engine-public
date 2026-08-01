@@ -1,6 +1,6 @@
 ---
 name: mcp-engine-ai-readiness
-description: Assess Power BI semantic models for Copilot, Fabric data agent, and natural-language Q&A readiness. Use when reviewing whether a model has clear business terminology, unambiguous metrics, usable date defaults, focused field exposure, descriptions, AI instructions, AI data schema recommendations, verified-answer candidates, or natural-language validation tests.
+description: Use when preparing or assessing a Power BI semantic model for Copilot, Fabric data agents, or natural-language Q&A — clear business terminology, unambiguous metrics, usable date defaults, focused field exposure, descriptions, AI instructions, AI data schema recommendations, verified-answer candidates, or natural-language validation tests. For general modeling quality unrelated to AI consumption, use mcp-engine-model-quality.
 ---
 
 # PBI AI Readiness

@@ -1,0 +1,4 @@
+interface:
+  display_name: "PBI Refactoring"
+  short_description: "Refactor model objects safely at scale"
+  default_prompt: "Use $mcp-engine-refactoring to plan and execute this model refactor with dependency analysis, baselines, checkpoints, and verification."

@@ -13,7 +13,9 @@ This guide covers calculation group authoring patterns, time intelligence items,
 
 Calculation groups require compatibility level >= 1500. `manage_semantic` with `create_calc_group` supports:
 
-- `allow_compatibility_upgrade=true` in spec to attempt an upgrade if needed (may be blocked by host).
+- `allow_compatibility_upgrade=true` acknowledges the irreversible upgrade if one is required.
+- The compatibility upgrade and calculation-group changes are planned together, approved as one scope, and committed atomically.
+- The server never performs a standalone compatibility commit before the calculation-group write.
 
 ## Create a Calculation Group
 
@@ -98,6 +100,9 @@ Bulk calc-group operations use the top-level `items` array. Calculation group it
 
 - For `create_calc_group`, put calculation items in `spec.items`.
 - For `update_calc_group`, put calculation item changes in `spec.items_upsert` / `spec.items_delete`.
+- With `transaction: true`, the complete batch is preflighted, approved once, and committed once. Any planning conflict prevents all live mutation.
+- With `transaction: false`, each item has its own commit. Processing stops if a commit outcome is `Unknown`.
+- `dry_run: true` performs planning and validation without approval, TOM mutation, or persistence.
 
 ```json
 {
@@ -114,3 +119,13 @@ Bulk calc-group operations use the top-level `items` array. Calculation group it
   ]
 }
 ```
+
+## Commit Outcome and Recovery
+
+The server reloads and reads the calculation group back after a successful commit. If that verification fails, the operation remains classified as `Applied` and `retry_safe` is false because replaying the original request could duplicate or overwrite changes.
+
+When the result says the write was applied but verification did not complete:
+
+1. Inspect the selected model and the model-change history.
+2. Compare the actual group, items, order, and compatibility level with the requested state.
+3. Do not retry the original write automatically. Submit a new corrective request only after inspecting the model.

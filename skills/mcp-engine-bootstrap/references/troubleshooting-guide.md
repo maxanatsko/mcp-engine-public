@@ -4,12 +4,25 @@ This guide lists common issues when using SemanticOps MCP, formerly MCP Engine, 
 
 ## Related Tools and Resources
 
-- `manage_model_connection`: `operation="list"|"list_workspaces"|"select"|"get_current"|"reload"|"authenticate"|"sign_out"|"set_impersonation"` for model selection, service sign-in, and metadata refresh
+- `manage_model_connection`: `operation="list"|"list_workspaces"|"select"|"get_current"|"reload"|"accept_current_model_state"|"authenticate"|"cancel_authentication"|"sign_out"|"set_impersonation"` for model selection, service sign-in, authentication cancellation, metadata refresh, and Full-mode manual Desktop verification resolution
 - `list_model`: `operation="list"|"search"|"analyze"|"info"` for discovery and diagnosis
 - `run_query`: `operation="execute"|"analyze"|"vertipaq"|"test_access"` for validation and performance checks
 - `tool-invocation-conventions.md`: argument shape and bulk patterns
 
 ## Connection and Discovery
+
+### Power BI Service sign-in flow fails
+
+Use `manage_model_connection` with `operation="authenticate"`, `source="service"`, and one of:
+
+- `auth_flow="interactive"` to open a browser on the machine running SemanticOps.
+- `auth_flow="device_code"` for remote or headless hosts.
+- `auth_flow="silent"` to restore only a reusable in-memory, cached, or configured noninteractive session. It returns `status: "unauthenticated"` when none exists and never starts user interaction.
+- `auth_flow="auto"`, or omit `auth_flow`, to preserve `MCP_ENGINE_AUTH_MODE` behavior.
+
+Silent MSAL acquisition may contact Microsoft Entra to refresh a cached token, but it never opens a browser, issues a device code, or falls through to an interactive flow. Interactive flow returns `interactive_auth_unavailable` when the host cannot open a system browser and does not fall back to device code. Explicit interactive or device-code public-client flows return `auth_flow_not_supported_for_configured_mode` when the deployment uses an access token or service principal. These flow choices do not bypass Microsoft Entra Conditional Access.
+
+If an authentication attempt is already pending, repeat the same flow to retrieve its current state or call `operation="cancel_authentication"`, `source="service"` before switching flows. Cancellation succeeds with `cancelled=false` when no attempt is pending.
 
 ### “Not connected” / no model selected
 
@@ -70,6 +83,25 @@ Configuration:
 - Set `MCP_ENGINE_EXTERNAL_CHANGE_AUTO_RELOAD=true` to automatically reload without prompting.
 - Set `MCP_ENGINE_EXTERNAL_CHANGE_FAIL_CLOSED=false` to allow operations on stale metadata.
 
+### Desktop verification remains pending after reload
+
+`reload` is the normal resolution path. It refreshes Desktop metadata and clears the pending revision only when the saved expectation and model-health checks pass.
+
+If the current Desktop model is correct but automatic verification cannot prove the active revision, pending responses with available evidence include `manual_resolution_action`. Review its warning and use the exact `model_id` and `verification_revision_id` it supplies:
+
+```json
+{
+  "operation": "accept_current_model_state",
+  "model_id": "<exact model ID>",
+  "verification_revision_id": "<exact revision ID>",
+  "confirm": true
+}
+```
+
+This Full-mode-only operation refreshes the same Desktop model again, confirms that neither identity nor revision changed, and then clears only that exact revision. When elicitation is available, approve the default-false prompt; otherwise `confirm=true` is required. Success reports `accepted_current_state` and warns that the original mutation was not proven. It does not report the saved expectation as reflected or verified.
+
+Do not copy IDs from an older response. A model switch, concurrent write, repeated acceptance, unavailable evidence, disconnected Desktop session, declined or malformed confirmation, cancellation, refresh failure, or stale revision leaves the guard active. Reconnect or run `reload` first when Desktop is disconnected. Service/XMLA, read-only, and browse-only modes do not expose this operation.
+
 ## Confirmation Prompts Are Disabled
 
 Cause:
@@ -85,6 +117,46 @@ Impact:
 Fix:
 
 - Unset `MCP_ENGINE_DISABLE_ELICITATION`, set it to `false`, or use the documented `confirm=true` fallback for operations that support it.
+
+## Policy Configuration Fails During Startup
+
+Cause:
+
+- A policy enum uses an undocumented alias, a numeric limit is outside its documented inclusive range, the policies directory is not writable, or a configured path cannot be normalized.
+
+Behavior:
+
+- SemanticOps rejects explicit invalid policy configuration before policy runtime services are constructed, regardless of mode, connection source, or license tier.
+- The error names the exact configuration property and environment variable. Invalid bundle-path errors include only a safe filename and reason, never the full directory.
+- A syntactically valid bundle path may point to a missing file; the existing bundle load and lockdown path handles that after startup.
+
+Fix:
+
+1. Use only `fail_closed|fail_open` for `MCP_ENGINE_POLICY_FAIL_MODE` and `proceed|deny` for `MCP_ENGINE_POLICY_CONFIRMATION_UNSUPPORTED`.
+2. Check the accepted numeric ranges in the policy guide or admin operations reference. Defaults apply only when a variable is absent.
+3. Use `~`, `~/...`, or `~\...` only at the beginning of a policy path. Embedded tildes are preserved literally.
+4. Correct the reported value and restart; policy configuration is immutable for the process lifetime and is not re-read after startup.
+
+## `POLICY_PROCESSING_FAILED` / Local Policy Store Failed
+
+Cause:
+
+- A local policy file could not be read or secured, contains empty/corrupt/`null` JSON, has `rules: null`, or contains an invalid store or rule.
+- A condition or required context-enrichment step failed while evaluating a rule.
+
+Behavior:
+
+- The default `MCP_ENGINE_POLICY_FAIL_MODE=fail_closed` blocks tools with `POLICY_PROCESSING_FAILED`; `manage_policy` and `manage_policy_ui` stay available for recovery.
+- Invalid stores are rejected atomically. SemanticOps does not publish a filtered subset of valid rules.
+- Explicit `fail_open` is intended for development. It records the structured failure and continues through another valid scope or later unrelated rules.
+- Enterprise bundle failure retains its separate lockdown status and recovery allowlist.
+
+Fix:
+
+1. Call `manage_policy` with `operation="status"` and inspect `local_store_state` and sanitized `local_store_failures`.
+2. Repair or reset only the failed scope with `manage_policy`; do not rely on the rejected file's apparently valid rules.
+3. Restart after changing `MCP_ENGINE_POLICY_FAIL_MODE` or `MCP_ENGINE_POLICY_CONFIRMATION_UNSUPPORTED`. Invalid explicit values fail startup.
+4. Keep `fail_closed` for production. If temporarily using `fail_open`, verify the audit entry `_policy` annotation reports `proceeded` and return to `fail_closed` after recovery.
 
 ## Argument Shape and Naming Issues
 
@@ -151,7 +223,7 @@ Bulk validation notes:
 Fix:
 
 - Validate quoting rules (tables in quotes, columns/measures in brackets).
-- Use `../../mcp-engine-query/references/dax-query-guide.md` patterns.
+- Use `dax-query-guide.md (from the mcp-engine-query skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)` patterns.
 - If the failing expression is in a measure, search for dependencies:
   - `list_model` with `operation: "search"` and `spec: { mode: "dax", query:"MeasureName"` or query for `"[Measure]"`.
 
@@ -197,7 +269,7 @@ Fix:
   - `cross_filter_direction="OneDirection"`
 - Use inactive relationships for alternate date keys and `USERELATIONSHIP` in measures.
 
-See: `../../mcp-engine-schema-authoring/references/relationships-guide.md` and `../../mcp-engine-semantic-authoring/references/modeling-best-practices-guide.md`.
+See: `relationships-guide.md (from the mcp-engine-schema-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)` and `modeling-best-practices-guide.md (from the mcp-engine-semantic-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`.
 
 ### Relationship was created but `RELATED()` or validation still fails
 
@@ -250,7 +322,7 @@ Fix:
 
 - Create Power Query parameters named `RangeStart` and `RangeEnd` (DateTime), or set `range_start_parameter` / `range_end_parameter` to the names you use.
 
-See: `../../mcp-engine-schema-authoring/references/incremental-refresh-policy-guide.md`.
+See: `incremental-refresh-policy-guide.md (from the mcp-engine-schema-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`.
 
 ### “refresh_policy.source_expression is required”
 
@@ -394,7 +466,7 @@ Cause:
 
 Fix:
 
-- Reduce model size (see `../../mcp-engine-query/references/vertipaq-optimization-guide.md`)
+- Reduce model size (see `vertipaq-optimization-guide.md (from the mcp-engine-dax-performance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`)
 - Remove unused columns
 - Consider aggregations or Direct Lake mode
 - Upgrade capacity tier if needed

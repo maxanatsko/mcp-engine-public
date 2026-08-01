@@ -30,6 +30,9 @@ Start by measuring a representative query (ideally the one a slow visual issues)
 
 Interpretation shortcut:
 
+- Desktop comparisons are cold-cache only when the response has no `clear_cache failed` limitation. If clearing fails, resolve it or start a separate run with `clear_cache: false`, discard run 1, and compare the median of runs 2..N; do not mix successful and failed cache-clear attempts.
+- Power BI Service XMLA cannot clear cache. Record the returned limitation, discard run 1 as warm-up, and compare the median of runs 2..N as an identical warm-cache benchmark. Treat the Storage Engine / Formula Engine split from discarded run 1 as diagnostic triage only, not comparison evidence.
+
 - **SE-heavy**: Storage Engine scans/joins/aggregations dominate.
 - **FE-heavy**: Formula Engine (DAX iterators/context transitions) dominates.
 - **Both heavy**: often model bloat + complex measures.
@@ -74,7 +77,7 @@ Typical fixes:
 
 Verification:
 
-- Re-run `run_query` with `operation: "analyze"` with `clear_cache=true` to compare.
+- Re-run `run_query` with `operation: "analyze"` using the same query, run count, connection kind, and cache treatment. Verify Desktop cache clearing succeeded before claiming a cold-cache result. For warm-cache comparisons, discard run 1 and compare the median of the remaining runs.
 
 ### 2) High Formula Engine time (FE)
 
@@ -242,8 +245,9 @@ Build a small set of representative queries for:
 
 Store them externally and rerun with:
 
-- `clear_cache=true` for apples-to-apples comparisons
-- a consistent `runs` setting (3 or 5)
+- Desktop: request `clear_cache=true` and confirm no cache-clear limitation before calling the comparison cold-cache; otherwise resolve the failure or start a separate `clear_cache=false` run, discard run 1, and compare the remaining warm samples.
+- Service XMLA: record the no-cache-clear limitation, discard run 1, and compare medians from the remaining warm runs.
+- A consistent `runs` setting (3 or 5).
 
 ## D. Change Safely
 
@@ -252,4 +256,4 @@ When changing performance-sensitive parts:
 1. Make one change at a time.
 2. Validate correctness (`run_query`) before optimizing further.
 3. Measure (`run_query` with `operation: "analyze"`) before/after.
-4. If doing a batch refactor, use checkpoints/changesets (`../../mcp-engine-testing-changes/references/model-changes-guide.md`).
+4. If doing a batch refactor, use checkpoints/changesets (`model-changes-guide.md (from the mcp-engine-testing-changes skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`).

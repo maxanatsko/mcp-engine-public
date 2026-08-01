@@ -55,7 +55,7 @@ Allowed tools after approval:
 
 Links:
 
-- Wiki: `docs/wiki/tools/manage_license.mdx`
+- Wiki: https://semanticops.dev/wiki/tools/manage_license
 - Pricing: `/pricing`
 
 ## 2. Server Mode
@@ -83,7 +83,7 @@ Allowed tools after approval:
 
 Links:
 
-- Wiki: `docs/wiki/concepts/modes-and-restrictions.mdx`
+- Wiki: https://semanticops.dev/wiki/concepts/modes-and-restrictions
 
 ## 3. Connection Context
 
@@ -137,8 +137,8 @@ Allowed tools after approval:
 
 Links:
 
-- `docs://pii-masking-guide`
-- Wiki: `docs/wiki/tools/manage_preferences-settings.mdx`
+- `pii-masking-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- Wiki: https://semanticops.dev/wiki/tools/manage_preferences-settings
 
 ## 5. Guardrails
 
@@ -173,8 +173,8 @@ Allowed tools after approval:
 
 Links:
 
-- `docs://policy-guide`
-- Wiki: `docs/wiki/tools/manage_policy.mdx`
+- `policy-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- Wiki: https://semanticops.dev/wiki/tools/manage_policy
 
 ## 6. Preferences And Memory
 
@@ -214,8 +214,8 @@ Rules:
 
 Links:
 
-- Wiki: `docs/wiki/tools/manage_preferences.mdx`
-- Wiki: `docs/wiki/tools/manage_preferences-scopes.mdx`
+- Wiki: https://semanticops.dev/wiki/tools/manage_preferences
+- Wiki: https://semanticops.dev/wiki/tools/manage_preferences-scopes
 
 ## 7. Change Safety And Impact Checks
 
@@ -242,10 +242,10 @@ Allowed tools after approval:
 
 Links:
 
-- `docs://dependencies-guide`
-- `docs://model-changes-guide`
-- Wiki: `docs/wiki/tools/manage_dependencies.mdx`
-- Wiki: `docs/wiki/tools/manage_model_changes.mdx`
+- `dependencies-guide.md (from the mcp-engine-testing-changes skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- `model-changes-guide.md (from the mcp-engine-testing-changes skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- Wiki: https://semanticops.dev/wiki/tools/manage_dependencies
+- Wiki: https://semanticops.dev/wiki/tools/manage_model_changes
 
 ## 8. Unit Tests
 
@@ -277,8 +277,8 @@ Rules:
 
 Links:
 
-- `docs://unit-testing-guide`
-- Wiki: `docs/wiki/tools/manage_tests.mdx`
+- `unit-testing-guide.md (from the mcp-engine-testing-changes skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- Wiki: https://semanticops.dev/wiki/tools/manage_tests
 
 ## 9. Model Reports
 
@@ -361,13 +361,13 @@ Rules:
 
 Links:
 
-- `docs://security-roles-guide`
+- `security-roles-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
 
-## 12. Prompt And Completion Helpers
+## 12. Prompt Helpers
 
 Say:
 
-"Some Pro features are helpers rather than setup switches: better completions and built-in prompts for DAX best practices, naming conventions, and security guidance. Guide documents are available to all tiers."
+"Some Pro features are helpers rather than setup switches, including built-in prompts for DAX best practices, naming conventions, and security guidance. Guide documents are available to all tiers."
 
 Ask:
 
@@ -415,8 +415,8 @@ Rules:
 
 Links:
 
-- `docs://audit-logging-guide`
-- `docs://policy-guide`
+- `audit-logging-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
+- `policy-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
 
 ## Final Approval Batch
 

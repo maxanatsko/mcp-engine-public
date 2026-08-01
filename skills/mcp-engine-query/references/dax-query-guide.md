@@ -5,7 +5,7 @@ This guide provides comprehensive instructions for writing DAX queries using the
 ## Related Tools
 
 - `run_query`: Execute DAX queries and return results (`operation: "execute"`)
-- `list_model`: Discover model schema (`operation: "list"`, `spec: { type: "tables|columns|measures|relationships" }`)
+- `list_model`: Discover model schema (`operation: "list"` with `spec: { type: "tables" }`; `spec.type` takes one value per call — `tables`, `columns`, `measures`, or `relationships`)
 - `list_model`: Understand table data before writing queries (`operation: "analyze"`, `spec: { mode: "describe|preview" }`)
   - `describe` filters Power BI system artifacts by default; set `include_system_artifacts: true` only when you need raw internal metadata
 - `manage_semantic`: Create DAX measures for reusable calculations (`operation: "create_measure"`)

@@ -6,8 +6,8 @@ This guide describes consistent JSON argument patterns across tools in this MCP 
 
 - `tool-invocation-conventions.md` (this guide)
 - `troubleshooting-guide.md` (common mistakes + fixes)
-- `../../mcp-engine-schema-authoring/references/column-and-table-authoring-guide.md` (schema operations)
-- `../../mcp-engine-semantic-authoring/references/measure-authoring-guide.md` (semantic layer operations)
+- `column-and-table-authoring-guide.md (from the mcp-engine-schema-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)` (schema operations)
+- `measure-authoring-guide.md (from the mcp-engine-semantic-authoring skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)` (semantic layer operations)
 
 ## Core Concepts
 
@@ -17,7 +17,7 @@ This guide describes consistent JSON argument patterns across tools in this MCP 
 - Some tools support `include_details` to return richer, server-computed details (often token-heavy).
 - `references/*.md` files in this skill are bundled markdown guides. Open them directly from the skill instead of treating them as web URLs.
 - Query outputs may contain `null` for DAX `BLANK`; treat that as query semantics, not automatic evidence that an object is missing.
-- Tool descriptions are intentionally concise because some MCP clients truncate descriptions. Treat `inputSchema` plus these `docs://...` resources as the detailed source of truth.
+- Tool descriptions are intentionally concise because some MCP clients truncate descriptions. Treat `inputSchema` plus the bundled reference guides as the detailed source of truth.
 
 ## Common Argument Keys
 
@@ -195,7 +195,6 @@ All paginated responses include a `pagination` object:
 
 ```json
 {
-  "count": 150,  // Back-compat: total count (same as pagination.total)
   "pagination": {
     "limit": 50,       // Requested limit (capped to max)
     "offset": 0,       // Requested offset
@@ -208,9 +207,11 @@ All paginated responses include a `pagination` object:
 }
 ```
 
+Some older list operations also expose a top-level `count`; treat `pagination.total` as canonical.
+
 ### Conventions
 
-- **`count == pagination.total`**: The top-level `count` field equals `pagination.total` for backwards compatibility.
+- **Legacy `count`**: Where a response still exposes a top-level `count`, it equals `pagination.total`; new integrations use `pagination.total`.
 - **Deterministic ordering**: Results are sorted consistently (typically alphabetically by name) for stable pagination.
 - **Silent capping**: If `limit` exceeds the tool's max, it's silently capped (no error).
 - **Grouped search exception**: `list_model` search with `format: "grouped"` uses `limit_per_type` instead of global pagination. `limit` is accepted as a compatibility alias for the same per-bucket cap.

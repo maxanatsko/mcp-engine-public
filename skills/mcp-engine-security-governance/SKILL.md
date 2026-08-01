@@ -1,48 +1,37 @@
 ---
 name: mcp-engine-security-governance
-description: Handle Power BI security and governance workflows. Use when defining or validating RLS or OLS, perspectives, policies, masking rules, or audit workflows, and when distinguishing between security enforcement and model curation.
+description: Use when creating or changing RLS roles, role filters, OLS permissions, perspectives, allow/deny/confirm policy rules, PII or numeric masking, or audit logging and evidence export, and when deciding whether a request needs security enforcement or only curation. For first-time guided setup of policies, masking, and guardrails, use mcp-engine-onboarding.
 ---
 
 # PBI Security Governance
 
-Use this skill for security enforcement and governance work. Keep curation concerns separate from true access control.
+Security enforcement and governance through `manage_security`, `manage_policy`, and `manage_audit`. Keep curation separate from access control.
 
 ## Start with the right category
 
-- Treat perspectives as curation, not access control.
-- Treat roles, object security, policies, masking, and auditability as enforcement concerns.
-- Confirm the current model and intended scope before modifying anything security-sensitive.
+- Perspectives (`create_perspective`, `update_perspective`) are curation — they change what users see, not what they can access.
+- Roles, OLS, policies, masking, and audit are enforcement — fail closed by default unless the user explicitly changes that posture.
+- Confirm the current model with `manage_model_connection` `{ "operation": "get_current" }` and state the intended scope before modifying anything security-sensitive.
 
 ## Branch by workflow
 
-### RLS, OLS, and perspectives
-
-- Read [security-roles-guide](references/security-roles-guide.md) before changing RLS or OLS.
-- Read [perspectives-guide](references/perspectives-guide.md) when the user wants curated field visibility rather than restricted access.
-- Validate role behavior with targeted test queries after making changes.
-
-### Policies and masking
-
-- Read [policy-guide](references/policy-guide.md) when the task involves allow, deny, or confirmation rules.
-- Read [pii-masking-guide](references/pii-masking-guide.md) when the task involves sensitive-value redaction or masking behavior.
-- Keep enforcement fail-closed by default unless the user explicitly changes that posture.
-
-### Audit workflows
-
-- Read [audit-logging-guide](references/audit-logging-guide.md) when the task involves durable audit trails, export verification, or integrity checks.
-- Treat auditability as part of correctness for write and governance flows.
+- RLS and OLS: `manage_security` (`create_role`, `set_role_filters`, `set_role_permissions`) — read [security-roles-guide](references/security-roles-guide.md) first. For RLS, validate each affected role with `run_query` `{ "operation": "test_access", "query": "<small aggregate over the filtered data>", "spec": { "roles": ["<role>"] } }` (both `query` and `spec.roles` are required). For OLS, exercise every changed table or column directly under the affected principals and verify each expected allow or denial; use targeted `test_access` queries or a `manage_tests` `ols_validation` matrix. An unrelated aggregate is not OLS evidence.
+- Perspectives: [perspectives-guide](references/perspectives-guide.md) — when the user wants curated field visibility, not restricted access.
+- Policy rules and packs: `manage_policy` (`status`, `evaluate`, `put`, `packs_apply` with `dry_run: true` first) — [policy-guide](references/policy-guide.md). Prefer deny rules over `require_confirm` for high-risk operations; `require_confirm` is best-effort UX, not a portable control.
+- Masking: [pii-masking-guide](references/pii-masking-guide.md) for sensitive-value redaction and masking behavior.
+- Audit: [audit-logging-guide](references/audit-logging-guide.md) for durable trails, export verification, and integrity checks. Treat auditability as part of correctness for write and governance flows.
 
 ## Guardrails
 
-- Confirm intent before destructive or broad security changes.
-- Separate perspective work from RLS or OLS work so the user does not mistake curation for protection.
-- Re-test the affected principals or policies after changes.
-- Avoid exposing sensitive values in summaries, examples, or logs.
+- Confirm intent with the user before destructive or broad security changes.
+- Never present a perspective as protection; say explicitly when a request needs RLS or OLS instead.
+- Do not echo sensitive values, filter expressions over PII, or masked data in summaries, examples, or logs.
 
-## References
+## Report results
 
-- [security-roles-guide](references/security-roles-guide.md)
-- [perspectives-guide](references/perspectives-guide.md)
-- [policy-guide](references/policy-guide.md)
-- [pii-masking-guide](references/pii-masking-guide.md)
-- [audit-logging-guide](references/audit-logging-guide.md)
+After security or governance work, report:
+
+1. Roles, permissions, policies, or masking rules created or changed.
+2. `test_access` or `ols_validation` results for each affected role, principal, and protected object.
+3. Policy evaluation or dry-run outcomes before application.
+4. The enforcement posture after the change — what is now denied, confirmed, masked, or audited.

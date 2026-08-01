@@ -59,6 +59,27 @@ Additional environment knobs:
 - `MCP_ENGINE_CHANGES_MAX_DISK_MB` (default: 200)
 - `MCP_ENGINE_CHANGES_RETENTION_DAYS` (default: 30)
 - `MCP_ENGINE_CHANGES_CLEANUP_INTERVAL_HOURS` (default: 1)
+- `MCP_ENGINE_CHANGES_FINALIZATION_TIMEOUT_MS` (default: 30000; bounded recovery after a model mutation starts)
+
+## Mutation outcomes and recovery
+
+Tracked model writes, changeset batches, undo, redo, transaction rollback, and checkpoint restore include an additive `operation_outcome` object. Existing operation-specific response fields remain unchanged.
+
+- `model_mutation` is `not_applied`, `applied`, or `unknown`.
+- `audit_outcome` is `complete` or `incomplete`.
+- `retry_safe` states whether repeating the original model mutation is safe. Never infer safety from the MCP error flag alone.
+- `failed_phase` and `failure_reason` identify the sanitized finalization failure.
+- `recovery.action` tells an automated client to retry the original request, retry finalization, inspect model/history state, or take no action.
+
+When `recovery.action` is `retry_finalization`, call:
+
+```json
+{ "operation": "retry_finalization", "operation_id": "<operation_id>" }
+```
+
+This operation resumes only the recorded idempotent audit/finalization phase. It never re-executes the model write or snapshot restore. Repeating `retry_finalization` after completion is safe and reports the completed outcome. If `model_mutation="unknown"`, inspect the current model and transaction history instead of replaying the original operation.
+
+Caller cancellation stops work before the mutation boundary. Once a mutation or restore starts, rollback and mandatory finalization use the bounded internal recovery timeout so caller cancellation cannot cancel its own safety recovery.
 
 ### Snapshot ownership and legacy data
 
@@ -207,6 +228,10 @@ If the client doesn't support elicitation:
 
 ## Checkpoints (Pinned Snapshots)
 
+Model-change history from SemanticOps MCP v3.8.2 remains within the supported identity-migration window. The server migrates legacy model identity aliases through one shared resolver; this migration is removed when the minimum supported release advances beyond data that requires it.
+
+Local model-change storage supports database schemas v5 through v10. Schemas v5-v9 upgrade to v10; older databases must first be opened with SemanticOps MCP v3.8.2, and newer schemas are rejected to prevent downgrade corruption. Incomplete restore finalizations durably protect their pre-restore recovery snapshot from retention and explicit deletion until finalization completes. Snapshot content is stored by checkpoint ID, not by a database-persisted path, and restore accepts only the `{ "create": { "database": ... } }` envelope produced by the server.
+
 ### Pin a checkpoint
 
 ```json
@@ -247,8 +272,6 @@ If the client doesn't support elicitation:
 ```json
 { "operation": "delete_checkpoint", "checkpoint_id": "snap_xyz789", "confirm": true }
 ```
-
-Backward compatibility: older clients used `transaction_id` as the identifier for checkpoints. This is still accepted.
 
 ## Changesets (Queue and Apply Multiple Operations)
 
