@@ -76,6 +76,8 @@ Numeric masking is controlled separately, but uses the same preference-driven to
 
 Numeric values are multiplied by one cryptographically generated scalar that remains stable for the current Desktop or Service model connection session and rotates when a new connection session begins. `ScalarMin` and `ScalarMax` must both be finite and greater than zero, and `ScalarMax` must be strictly greater than `ScalarMin`; fixed or invalid ranges are rejected during startup instead of being replaced with fallback values.
 
+Integral values are rounded to the nearest value using midpoint-to-even rounding and keep their original numeric type when the result fits. This keeps integer-shaped JSON stable, but ratios involving integral values are approximate and a sufficiently small scaled change can round back to the original value. If a scaled result cannot fit its source type, masking returns a wider finite numeric value; values beyond the `double` range are saturated at the signed finite limit instead of failing the tool call or emitting infinity.
+
 Numeric masking keeps a smaller universal structural core and expands region/reference-code hints from named profiles. The built-in profiles are:
 
 - `reference_common`
