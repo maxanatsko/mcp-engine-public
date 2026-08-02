@@ -299,8 +299,11 @@ Customer j***@****.com called from ***-***-3456.
 ```
 
 Freeform scanning is bounded to avoid pathological cost and uses the same regex timeouts as other PII
-detection paths. Use `StructuredOnly` if you only want structured identifiers redacted inside comments
-and do not want contextual name/address redaction.
+detection paths. Detection fails closed: a value longer than 16 KB or a value whose regex analysis times
+out is whole-masked. Timeout diagnostics include only classified table and column metadata, never the
+value being inspected. Typed values are formatted with the invariant culture before detection and
+masking. Use `StructuredOnly` if you only want structured identifiers redacted inside comments and do
+not want contextual name/address redaction.
 
 ### Per-model annotations
 
