@@ -46,6 +46,8 @@ Common heuristics:
 
 Set `include_query_plan=true` in spec to capture logical/physical plans:
 
+When numeric masking is active, logical and physical plan text is returned as a fixed protected marker because engine plans can embed raw row or cardinality estimates. The response reports `query_plan.logical_plan` and `query_plan.physical_plan` in `numeric_metric_masking`.
+
 ```json
 {
   "operation": "analyze",

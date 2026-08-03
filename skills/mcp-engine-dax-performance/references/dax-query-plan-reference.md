@@ -2,6 +2,8 @@
 
 This reference describes operators and patterns found in DAX query plans captured by the `run_query` tool with `operation: "analyze"` (Pro feature).
 
+If numeric masking is active, plan text is fixed-redacted because it can contain raw row or cardinality estimates. Disable numeric masking only in an authorized environment when the original plan text is required.
+
 Use it as a practical guide for interpreting **logical** and **physical** plans and producing actionable, low-hallucination recommendations.
 
 ## Related Tools and Resources

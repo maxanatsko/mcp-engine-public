@@ -74,6 +74,11 @@ Query results are returned in a compact **tabular format** optimized for LLM con
 - `run_query` `operation: "execute"` may include `display_columns` for model-visible calls when PII or numeric masking was applied.
 - `run_query` `operation: "test_access"` may include `results.<role>.numeric_masked` for model-visible calls when the returned scalar value came from a numerically masked column.
 - `list_model` `operation: "analyze"` may include `display_columns` for `preview` mode and root-level `display_column` for `column_stats` mode when PII or numeric masking was applied.
+- `list_model` `operation: "analyze"` protects semantic `row_count` and the `column_stats` summary cardinality/total/blank counts with the same session scalar used for query cells. `column_stats.values.returned_count` remains exact because it is the number of returned sample values, not full column cardinality.
+- `list_model` partition `data_size`, full-schema `tables[].partitions[].dataSize`, and `run_query analyze` trace `estimated_rows` are protected. Storage-engine trace text and logical/physical query-plan text are fixed-redacted while numeric masking is active because they can embed raw estimates; `numeric_metric_masking` names the affected plan fields. Query timings, trace resource measurements, pagination, and returned-result counts remain structural.
+- Generated `list_model` DOCX/PDF/HTML report files are explicit exports and preserve source model metadata and numeric values; request-scoped masking continues to apply to MCP response payloads.
+- `run_query` `operation: "vertipaq"` protects dictionary/data sizes, semantic table rows, and optional DAX cardinality while preserving structural segment quantity.
+- `numeric_metric_masking` identifies the `session_scalar` strategy and the protected or scale-invariant derived fields. Its presence means policy was applied even if a zero, rounded, or saturated value did not numerically change.
 - When marker metadata is present, `masking_indicator` explains the marker so clients and LLMs can render a legend without guessing. Do not replace or further redact row values because of the marker; the values have already been masked before the response is returned.
 - App-internal tool surfaces keep raw payloads presentation-free and do not emit these display-only masking markers.
 
