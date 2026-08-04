@@ -1,11 +1,13 @@
 # VertiPaq Optimization Guide (`run_query`)
 
-This guide explains how to use VertiPaq storage stats to identify model bloat and performance issues.
+This guide explains how to use typed model-storage diagnostics to identify model bloat and performance issues without confusing physical storage with semantic query results.
 
 ## Related Tools
 
-- `run_query`: Storage stats per column (`operation: "vertipaq"` - dictionary/data sizes, encoding, segments)
-  - Filters Power BI system artifacts by default; set `include_system_artifacts: true` to inspect raw `RowNumber-*` or auto date table stats
+- `run_query`: Typed table, partition, and column diagnostics (`operation: "vertipaq"`)
+  - `storageDiagnostics` reports capability, completeness, source, formula, and bounded reasons for unavailable metrics.
+  - Physical storage rows and bytes come from storage/TMSCHEMA rowsets. `semanticRowCount` and requested `semanticCardinality` values come from DAX.
+  - Power BI system artifacts are filtered by default; set `include_system_artifacts: true` to retain captured system/generated/row-number objects.
 - `run_query`: Validate performance improvements after changes (`operation: "analyze"` - Pro for query plan)
 - `list_model`: Inspect visibility, types, and column count (`operation: "list"`, `spec: { type: "columns" }`)
 
@@ -25,15 +27,14 @@ One table:
 
 ## Cardinality (Optional, Expensive)
 
-`include_cardinality=true` runs DAX to compute exact distinct counts per column.
+`include_cardinality=true` runs bounded internal DAX batches to compute semantic `DISTINCTCOUNT` values. There is no public batch-size option.
 
 ```json
 {
   "operation": "vertipaq",
   "spec": {
     "table": "Sales",
-    "include_cardinality": true,
-    "cardinality_batch_size": 25
+    "include_cardinality": true
   }
 }
 ```
@@ -41,7 +42,19 @@ One table:
 Guidance:
 
 - Use only when you need exact counts.
-- Expect 100–500ms per column (can be tens of seconds for wide models).
+- Expect additional semantic-engine work for wide or remote tables.
+- A successful DAX BLANK is normalized to zero. Denial, timeout, unsupported execution, connection loss, or query failure stays `null` with a metric-state reason.
+
+## Reading the Result
+
+- `semanticRowCount`: what `COUNTROWS` sees through the semantic engine.
+- `storageRowCount`: materialized table rows reported by `DISCOVER_STORAGE_TABLES`.
+- `partitions[].storageRowCount`: deduplicated canonical segment record counts when every required segment agrees.
+- `columns[].semanticCardinality`: optional semantic `DISTINCTCOUNT`; it is not a storage distinct-state statistic.
+- `dataBytes`, `dictionaryBytes`, and `hierarchyBytes`: separate physical classifications. Relationship, index, and unknown objects remain under `unmappedBytes`.
+- `metricStates`: the status, bounded reason, source, and formula for each metric. Treat a numeric `null` as unavailable or partial evidence, never as zero.
+
+The result deliberately omits totals, percentages, ratios, findings, runtime memory, raw provider rows, and connection identifiers.
 
 ## What to Look For
 
@@ -100,11 +113,11 @@ For large fact tables where full import isn't practical, consider aggregation ta
 
 ### Direct Lake Mode (Microsoft Fabric)
 
-Direct Lake is a storage mode available in Microsoft Fabric that bypasses VertiPaq entirely:
+Direct Lake is a storage mode available in Microsoft Fabric whose resident state can be partial:
 
 **How it works:**
-- Semantic model reads directly from Delta tables in OneLake
-- No data copy or import refresh required
+- Semantic model reads Delta data from OneLake and can materialize resident state for query execution
+- Storage diagnostics describe only the resident/materialized components that the provider exposes
 - Queries run against columnar Parquet files in the lakehouse
 
 **When to consider Direct Lake:**
