@@ -150,7 +150,9 @@ Delete:
 
 `delete_pq_parameter` fails if the target expression does not look like a Power Query parameter (missing `IsParameterQuery=true`).
 
-On Desktop, creating/updating/deleting Power Query parameters updates shared M expressions and returns `desktop_sync_pending=true`. On June 2026+ Power BI Desktop, M/TOM changes are reflected immediately and silently with no Desktop action needed. Older Desktop versions may still show an external-changes banner; only if prompted, click `Discard` to accept MCP's external changes and do not click `Apply`. You may continue additional M changes, but in all Desktop versions call `manage_model_connection` with `operation="reload"` before continuing non-M operations (non-M write tools are blocked until reload verification succeeds). If multiple M changes were made before reload, responses include `desktop_sync_items[]`.
+Creating, updating, or deleting Power Query parameters updates shared M expressions through the TOM endpoint. MCP reports the mutation outcome but cannot verify the open Power Query document or any Power BI Desktop external-change prompt. Depending on the operation and Desktop version, Desktop may show a refresh prompt or an Apply/Discard prompt. Refresh when data requires it. Do not treat `Apply` or `Discard` as a generic way to accept MCP changes; either action can replace one side's state. Inspect the model before dependent edits. MCP does not block unrelated writes after an M write, and no reload is required before continuing.
+
+**Known limitation on Desktop connections:** parameters written through MCP may not reach Desktop's Power Query document or its Manage Parameters UI, and pressing `Apply` in Desktop can discard them. Verify parameters in Desktop before relying on them.
 
 ## Bulk Operations and Commit Semantics
 

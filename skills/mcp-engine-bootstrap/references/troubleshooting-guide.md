@@ -4,7 +4,7 @@ This guide lists common issues when using SemanticOps MCP, formerly MCP Engine, 
 
 ## Related Tools and Resources
 
-- `manage_model_connection`: `operation="list"|"list_workspaces"|"select"|"get_current"|"reload"|"accept_current_model_state"|"authenticate"|"cancel_authentication"|"sign_out"|"set_impersonation"` for model selection, service sign-in, authentication cancellation, metadata refresh, and Full-mode manual Desktop verification resolution
+- `manage_model_connection`: `operation="list"|"list_workspaces"|"select"|"get_current"|"reload"|"authenticate"|"cancel_authentication"|"sign_out"|"set_impersonation"` for model selection, service sign-in, authentication cancellation, and metadata refresh
 - `list_model`: `operation="list"|"search"|"analyze"|"info"` for discovery and diagnosis
 - `run_query`: `operation="execute"|"analyze"|"vertipaq"|"test_access"` for validation and performance checks
 - `tool-invocation-conventions.md`: argument shape and bulk patterns
@@ -83,24 +83,20 @@ Configuration:
 - Set `MCP_ENGINE_EXTERNAL_CHANGE_AUTO_RELOAD=true` to automatically reload without prompting.
 - Set `MCP_ENGINE_EXTERNAL_CHANGE_FAIL_CLOSED=false` to allow operations on stale metadata.
 
-### Desktop verification remains pending after reload
+### Power BI Desktop shows an external-change banner after an M write
 
-`reload` is the normal resolution path. It refreshes Desktop metadata and clears the pending revision only when the saved expectation and model-health checks pass.
+M writes reach the semantic model through the TOM endpoint. MCP reports the mutation outcome but cannot observe the open Power Query document or any Desktop prompt, so it neither claims Desktop accepted a change nor blocks later writes.
 
-If the current Desktop model is correct but automatic verification cannot prove the active revision, pending responses with available evidence include `manual_resolution_action`. Review its warning and use the exact `model_id` and `verification_revision_id` it supplies:
+`reload` refreshes MCP's view of model metadata. It is an ordinary metadata refresh: it does not reconcile Desktop, and it is not required between an M write and any other operation.
 
-```json
-{
-  "operation": "accept_current_model_state",
-  "model_id": "<exact model ID>",
-  "verification_revision_id": "<exact revision ID>",
-  "confirm": true
-}
-```
+Depending on the operation and Desktop version, Desktop may show a refresh prompt or an Apply/Discard prompt. Neither button is a way to "accept" MCP changes:
 
-This Full-mode-only operation refreshes the same Desktop model again, confirms that neither identity nor revision changed, and then clears only that exact revision. When elicitation is available, approve the default-false prompt; otherwise `confirm=true` is required. Success reports `accepted_current_state` and warns that the original mutation was not proven. It does not report the saved expectation as reflected or verified.
+- `Apply` writes Desktop's Power Query document into the model and can discard M objects MCP created.
+- `Discard` is frequently a no-op for TOM-originated M changes, and the banner may not clear.
 
-Do not copy IDs from an older response. A model switch, concurrent write, repeated acceptance, unavailable evidence, disconnected Desktop session, declined or malformed confirmation, cancellation, refresh failure, or stale revision leaves the guard active. Reconnect or run `reload` first when Desktop is disconnected. Service/XMLA, read-only, and browse-only modes do not expose this operation.
+Inspect the model with `list_model` before dependent edits rather than inferring state from the banner.
+
+**Known limitation on Desktop connections:** M objects written through MCP may not reach Desktop's Power Query document at all, and pressing `Apply` can remove them. Verify M changes in Desktop before relying on them.
 
 ## Confirmation Prompts Are Disabled
 

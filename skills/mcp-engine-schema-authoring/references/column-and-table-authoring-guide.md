@@ -70,7 +70,7 @@ Optional formatting:
 
 `query_group` applies only to M partitions. To change/remove group later, use `manage_schema` `update_partition` with `spec.query_group` or `spec.clear_query_group=true`.
 
-Desktop M writes require MCP-side verification. On June 2026+ Power BI Desktop, M/TOM changes are reflected immediately and silently with no Desktop action needed. Older Desktop versions may still show an external-changes banner; only if prompted, click `Discard` to accept MCP's external changes and do not click `Apply`. In all Desktop versions, call `manage_model_connection` with `operation="reload"` before continuing non-M operations.
+M writes are applied to the semantic model through the TOM endpoint. MCP reports the mutation outcome but cannot verify the open Power Query document or any Power BI Desktop external-change prompt. Depending on the operation and Desktop version, Desktop may show a refresh prompt or an Apply/Discard prompt. Do not treat `Apply` or `Discard` as a generic way to accept MCP changes; either action can replace one side's state. Inspect the model before dependent edits. MCP does not block unrelated writes after an M write, and no reload is required before continuing. On Desktop connections, note that M objects written through MCP may not reach Desktop's Power Query document, and pressing `Apply` in Desktop can discard them.
 
 **Processing options:**
 - `process`: When `true`, refreshes the table after creation (loads data)
