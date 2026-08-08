@@ -27,7 +27,7 @@ One table:
 
 ## Cardinality (Optional, Expensive)
 
-`include_cardinality=true` runs bounded internal DAX batches to compute semantic `DISTINCTCOUNT` values. There is no public batch-size option.
+`include_cardinality=true` runs bounded internal DAX batches to compute semantic `DISTINCTCOUNT` values. Row-number and non-ready internal columns are skipped before query construction and reported as `notRequested`. There is no public batch-size option.
 
 ```json
 {
@@ -53,6 +53,8 @@ Guidance:
 - `columns[].semanticCardinality`: optional semantic `DISTINCTCOUNT`; it is not a storage distinct-state statistic.
 - `dataBytes`, `dictionaryBytes`, and `hierarchyBytes`: separate physical classifications. Relationship, index, and unknown objects remain under `unmappedBytes`.
 - `metricStates`: the status, bounded reason, source, and formula for each metric. Treat a numeric `null` as unavailable or partial evidence, never as zero.
+
+TMSCHEMA IDs are capture identities, not VertiPaq DMV identities. The collector resolves exact, unique table/column/partition names once, then retains DMV-native table, column, partition, and segment numbers for physical aggregation. Import name mismatches are `mappingIncomplete`; `noMaterializedStorage` requires positive DirectQuery evidence.
 
 The result deliberately omits totals, percentages, ratios, findings, runtime memory, raw provider rows, and connection identifiers.
 
