@@ -115,14 +115,14 @@ For DAX-capable targets, `included.calculation_dependency_source` explains how c
 - `source`: `dmv`, `text_fallback`, or `text`.
 - `text_mode`: `supplementary` when text scanning is used alongside DMV exact edges, `fallback` when DMV access failed, `primary` when text scanning is the normal source, `unavailable` when corpus acquisition failed and another source supplied the partial result, or `not_used` when no text scan was needed.
 - `text_reason` and `warning_messages`: sanitized source-selection or availability details; server-side logs retain the underlying exception for diagnosis.
-- `dmv_diagnostics`: DMV row counts (`total_rows`, `mapped_rows`, `skipped_rows`, `skipped_row_ratio`) plus whether expected skipped-row warnings were suppressed.
+- `dmv_diagnostics`: raw DMV row counts (`total_rows`, `mapped_rows`, `skipped_rows`, `skipped_row_ratio`), delegated structural rows (`delegated_structural_rows` and `delegated_structural_rows_by_type`), unexpected skipped rows (`unexpected_skipped_rows` and `unexpected_skipped_row_ratio`), plus whether a skipped-row warning was suppressed.
 
-Expected Analysis Services internal DMV rows are recorded in diagnostics without producing warnings. A skipped-row warning is emitted only when the skipped volume is unusually high.
+`ACTIVE_RELATIONSHIP`, `RELATIONSHIP`, `ATTRIBUTE_HIERARCHY`, and `HIERARCHY` rows whose shape is supplied by the structural index are classified as delegated structural rows. They remain included in the compatible raw skipped-row totals but do not produce warnings. Only unexpected unmappable rows produce skipped-row warnings.
 
 ### Metadata edges (mentions)
-With `include_metadata=true`, matches in metadata fields (like `description`, `display_folder`, annotations, translations) are returned as `mode="text"` edges with `kind="mentions"`.
+With `include_metadata=true`, identifier fields such as `name`, `qualified_name`, `sort_by`, hierarchy members, and relationship endpoints are resolved against canonical table/object identities and require equality within the owning scope. Source-column mappings follow the same rule for regular source-column targets and never resolve to calculated columns. These identity-aware matches use `confidence="high"`.
 
-Name (and `qualified_name`) fields use word-boundary matching (e.g., targeting `Sales` matches `US Sales Only` but not `SalesThreshold`).
+Free-text fields such as descriptions, display folders, annotations, and translations retain substring matching and use `confidence="heuristic"`. Because the default `confidence_min` is `high`, set `confidence_min="any"` when you intentionally want fuzzy metadata mentions. Metadata results are advisory and are not used as authoritative evidence by destructive-operation policy.
 
 ### `operation="summary"`
 Same analysis as `used_by`, plus optional rendering:
@@ -145,7 +145,7 @@ This tool is fast and practical, but not a full parser:
 - For column targets, unqualified `[Column]` references are matched within table-scoped contexts (RLS filters, calculated columns).
 - It may produce false positives when names are ambiguous (e.g., short measure names).
 - Some targets (like `partition` and `role`) are inherently more heuristic.
-- Metadata edges (`include_metadata=true`) are intentionally fuzzy and can be noisy; keep `include_fields` narrow unless you need broader coverage.
+- Free-text metadata edges (`include_metadata=true`) are intentionally fuzzy and can be noisy; keep `include_fields` narrow and use `confidence_min="any"` only when you need broader mention coverage. Identifier metadata uses exact canonical identity matching.
 
 ## Performance & Caching
 
