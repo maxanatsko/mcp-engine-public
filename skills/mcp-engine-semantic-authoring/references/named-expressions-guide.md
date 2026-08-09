@@ -77,6 +77,20 @@ Optional:
 
 ## Assign / Clear Query Group
 
+QueryGroup paths use the Analysis Services separator `\`. `/` is a literal name character, not a hierarchy separator. Use `manage_schema` for explicit group lifecycle and create parents before children:
+
+```json
+{ "operation": "create_query_group", "target": "Landing" }
+```
+
+```json
+{ "operation": "create_query_group", "target": "Landing\\Raw" }
+```
+
+Empty groups remain until `delete_query_group` is called. Rename or move a group with `update_query_group` and `spec.new_path`; deletion is rejected while the group still has children or members.
+
+A direct single-object assignment may create its missing target group when its parent already exists. In a staged changeset, create the group in an earlier operation so final ownership and ordering are explicit.
+
 Set group on create or update:
 
 ```json
@@ -85,7 +99,7 @@ Set group on create or update:
   "target": "SharedSource",
   "spec": {
     "expression": "let Source = Sql.Database(\"server\", \"db\") in Source",
-    "query_group": "Landing/Raw",
+    "query_group": "Landing\\Raw",
     "allow_compatibility_upgrade": true
   }
 }
@@ -96,7 +110,7 @@ Set group on create or update:
   "operation": "update_named_expression",
   "target": "SharedSource",
   "spec": {
-    "query_group": "Landing/Curated",
+    "query_group": "Landing\\Curated",
     "allow_compatibility_upgrade": true
   }
 }

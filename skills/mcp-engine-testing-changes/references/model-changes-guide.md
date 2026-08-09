@@ -279,6 +279,10 @@ Changesets let you stage multiple tool calls and apply them as a batch.
 
 Changesets are scoped to the model that created them. Direct `changeset_id` operations such as add, preview, apply, and delete are rejected when the active connection is a different model. Connection-management operations, read-only refresh probes, and model changes/history/checkpoint/changeset control tools such as `manage_model_changes` cannot be queued or replayed inside changesets.
 
+For multiple related Power BI Desktop M mutations, always use one changeset instead of calling the write tools directly one operation at a time. Supported M-table, M-partition, named-expression, Power Query parameter, query-group, and applicable formatting operations are planned in order against one staged TOM model. `apply_changeset` validates the final graph and calls `Model.SaveChanges()` exactly once when the staged graph contains a mutation; an all-no-op changeset performs no commit. Unsupported or unsafe combinations fail before mutation; the server does not silently fall back to sequential per-operation commits.
+
+This single-commit contract is specific to eligible Desktop M changesets. Service/XMLA connections and non-M changesets retain their normal execution behavior.
+
 Lifecycle:
 - `draft`: can be updated, previewed, applied, or deleted
 - `applied`: immutable history entry; cannot be deleted
@@ -325,6 +329,30 @@ Provide:
 { "operation": "apply_changeset", "changeset_id": "cs_123" }
 ```
 
+A mutating eligible Desktop M changeset that completed its single TOM commit reports:
+
+```json
+{
+  "commit_strategy": "single_tom_commit",
+  "power_query_adoption_status": "user_verification_required",
+  "post_commit_validation_required": true,
+  "next_steps": [
+    "Open Power Query and confirm the final query tree and M text match the intended changeset.",
+    "If Power BI Desktop shows pending query changes, use Apply or Close & Apply, then validate the affected model objects and representative queries.",
+    "Do not start another Desktop M changeset until Power Query adoption and post-commit validation are complete."
+  ]
+}
+```
+
+The presence of `commit_strategy: "single_tom_commit"` confirms that one TOM commit and mandatory server-side finalization completed. `status: "applied"` alone does not prove a commit occurred because an all-no-op changeset also completes as applied without calling `SaveChanges`. TOM readback cannot prove that the Power Query editor adopted the committed state, so `power_query_adoption_status` remains `user_verification_required`; it does not mean Power Query rejected the changes.
+
+Before another Desktop M changeset:
+
+1. Open Power Query and confirm the final query tree, group placement, parameter metadata, and M text match the intended changeset.
+2. If Power BI Desktop shows pending query changes, use **Apply** or **Close & Apply** as appropriate for the current editor workflow. Do not press Apply blindly when Desktop shows no pending query changes.
+3. Re-read the affected model objects and run representative validation queries or test packs.
+4. Continue only after the Power Query and model results agree. If they diverge, stop and preserve the session for diagnosis instead of replaying the changeset.
+
 ### Delete / list changesets
 
 ```json
@@ -345,5 +373,6 @@ Response includes a `pagination` object with `total`, `has_more`, `next_offset`.
 2. Create a changeset and add your planned operations.
 3. Preview the changeset.
 4. Apply changeset.
-5. Validate: `list_model` with `operation: "search"` for broken references + `run_query` for key validation queries.
-6. If needed, restore the checkpoint.
+5. For a Desktop M changeset, confirm Power Query adoption; use Apply or Close & Apply only if Desktop shows pending query changes.
+6. Validate: `list_model` with `operation: "search"` for broken references + `run_query` for key validation queries.
+7. If needed, restore the checkpoint.

@@ -131,6 +131,8 @@ M partition writes are applied to the semantic model through the TOM endpoint. M
 
 ## Assign / Clear Query Group
 
+QueryGroup paths use `\` as the hierarchy separator; `/` remains a literal character. Use `manage_schema` for explicit group lifecycle, and create each parent before its children. Empty groups persist until `delete_query_group` is called.
+
 Assign group without redefining partition source:
 
 ```json
@@ -139,7 +141,7 @@ Assign group without redefining partition source:
   "table": "Sales",
   "target": "FY2025",
   "spec": {
-    "query_group": "Landing/Raw"
+    "query_group": "Landing\\Raw"
   }
 }
 ```
@@ -167,7 +169,7 @@ You can also assign a group during create:
   "spec": {
     "partition_type": "M",
     "expression": "let Source = ... in Source",
-    "query_group": "Landing/Raw"
+    "query_group": "Landing\\Raw"
   }
 }
 ```
@@ -176,6 +178,7 @@ Rules:
 - `query_group` is only supported for M partitions.
 - `query_group` and `clear_query_group=true` cannot be used together.
 - `spec.query_group` cannot be empty. Use `clear_query_group=true` instead.
+- A direct assignment may create a missing target group when its parent exists. In a staged changeset, create the group in an earlier operation.
 - If source is redefined to a non-M partition type, query group is removed.
 
 ## Safe Refresh Workflow
