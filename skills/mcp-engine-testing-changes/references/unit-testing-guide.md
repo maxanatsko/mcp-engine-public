@@ -258,7 +258,7 @@ Assert the result of a manual DAX query:
     "assert": {
       "kind": "scalar_query",
       "op": "equals",
-      "path": ["Value"],
+      "path": ["[Value]"],
       "expected": { "type": "number", "value": 1250000 },
       "tolerance": { "rel": 0.01 }
     }
