@@ -19,6 +19,12 @@ This guide describes consistent JSON argument patterns across tools in this MCP 
 - Query outputs may contain `null` for DAX `BLANK`; treat that as query semantics, not automatic evidence that an object is missing.
 - Tool descriptions are intentionally concise because some MCP clients truncate descriptions. Treat `inputSchema` plus the bundled reference guides as the detailed source of truth.
 
+## Same-Server Model-Bound Concurrency
+
+Do not send overlapping model-bound tool calls to the same MCP server. Model reads, writes, connection changes, reloads, impersonation changes, tests, and read-back projections share one model session and may contend when clients invoke them in parallel.
+
+Serialize model-bound calls to each server. When a session-busy response is retryable, wait for the active call to finish and then retry the blocked call. Calls to different MCP server instances are independent.
+
 ## Common Argument Keys
 
 ### `operation`
