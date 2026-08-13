@@ -25,14 +25,14 @@ Common fields in spec:
 - `mode`: `Import|DirectQuery|Dual`
 - `query_group`: assign an M partition to a Power Query group
 - `clear_query_group` (update only): clear existing group assignment
-- `schema_unchanged=true`: allowed for M partition expression changes only when the output schema must stay identical
+- `preserve_schema_mapping=true`: preserve the existing TOM column names and types while the caller accepts responsibility for M-output compatibility
 - Optional formatting:
   - `format_m`: only applies to `partition_type: "M"` with literal expressions
   - `format_dax`: only applies to `partition_type: "Calculated"` with literal expressions
 
 ## Create a Partition
 
-For M partitions on an existing table, provide `columns` matching the existing TOM table schema or set `schema_unchanged=true`.
+For M partitions on an existing table, provide `columns` matching the existing TOM table schema or set `preserve_schema_mapping=true`. The preservation flag is a caller assertion: MCP carries the existing TOM mapping forward but does not execute or inspect the M output.
 
 ```json
 {
@@ -43,7 +43,7 @@ For M partitions on an existing table, provide `columns` matching the existing T
     "partition_type": "M",
     "expression": "let Source = ... in Source",
     "mode": "Import",
-    "schema_unchanged": true,
+    "preserve_schema_mapping": true,
     "process": true,
     "refresh_type": "Full"
   }
@@ -102,7 +102,8 @@ Schema updates:
 
 - `columns`: array of `{ name, data_type, source_column?, is_hidden?, format_string? }`
 - For M expression updates, provide `columns` when the output shape may change.
-- Use `schema_unchanged=true` only when the M output shape must remain the same; MCP verifies TOM columns before/after the write and again after reload.
+- Use `preserve_schema_mapping=true` only when the existing TOM column names and types must be carried forward and the caller accepts responsibility for compatibility. The assertion does not cause MCP to execute or inspect the revised M output for schema compatibility. A separately requested refresh may execute the query, but it does not turn this assertion into runtime output-shape validation.
+- Added, removed, renamed, or type-changed M output columns are not reconciled under mapping preservation. Supply explicit `columns` to change the TOM mapping.
 - `drop_extra_columns=true` removes columns not listed (use with extreme caution)
 - `force=true` (only with `drop_extra_columns=true`) bypasses the best-effort DAX/role dependency scan, but structural blocks still apply (relationships, key columns, sort-by)
 
@@ -119,11 +120,13 @@ Notes:
     "expression": "let Source = ... in Source",
     "mode": "Import",
     "partition_type": "M",
-    "schema_unchanged": true,
+    "preserve_schema_mapping": true,
     "format_m": { "enabled": true, "consent": true }
   }
 }
 ```
+
+M partition writes use the same caller-assertion contract for Power BI Desktop and XMLA connections. `preserve_schema_mapping=true` proves only that SemanticOps planned the write with the existing TOM mapping; it is not evidence that the revised M output is compatible. The response reports `schema_mapping.runtime_output_validation_performed=false` and identifies the carried-forward TOM mapping as its evidence boundary.
 
 M partition writes are applied to the semantic model through the TOM endpoint. MCP reports the mutation outcome but cannot verify the open Power Query document or any Power BI Desktop external-change prompt. Depending on the operation and Desktop version, Desktop may show a refresh prompt or an Apply/Discard prompt. Refresh when data requires it. Do not treat `Apply` or `Discard` as a generic way to accept MCP changes; either action can replace one side's state. Inspect the model before dependent edits. MCP does not block unrelated writes after an M write, and no reload is required before continuing.
 
@@ -196,6 +199,10 @@ For `manage_refresh` model scope, tables marked `exclude_from_model_refresh` are
 ### Execution outcomes and recovery
 
 Refresh execution validates the complete target plan before requesting first-write approval. After approval, SemanticOps revalidates the selected model and target identities, stages every target once, and makes one commit attempt.
+
+Execution responses separate `command_execution` from `target_validation`. The command status reports whether the provider commit was applied, not applied, or unknown. After an applied table- or partition-scoped refresh, target validation reloads only the requested table/partition metadata and checks partition state, calculated-column state, and calculated-table column materialization. Model-scoped refreshes return `target_validation.status="not_checked"` rather than performing a whole-model validation scan.
+
+An applied command can therefore return `refreshed=true` with overall failure when the target remains invalid or post-command readback is unavailable. `target_validation.status="invalid"` includes sanitized requested-object diagnostics; `unavailable` means the command was applied but connection, session, timeout, or metadata-readback evidence could not confirm the target. Neither result is safe for automatic replay.
 
 - `NotApplied` means no refresh was committed and rollback was proven. Correct the validation, approval, or cancellation cause before retrying.
 - `Applied` means the commit returned successfully. Do not replay the refresh if later finalization, history, notification, snapshot, audit, or response handling fails; inspect the model and recover the incomplete follow-up work.

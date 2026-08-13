@@ -38,7 +38,7 @@ This guide covers the recommended, structured API for creating and updating para
 
 Supported `spec.type` values:
 
-- `Any` (default)
+- `Any`
 - `Text`
 - `Number`
 - `Logical`
@@ -49,6 +49,7 @@ Supported `spec.type` values:
 
 Notes:
 
+- When `spec.type` is omitted during creation, the server infers `Text`, `Logical`, or `Number` from a string, Boolean, or numeric `current_value`. A null or unsupported value uses `Any`. Supplying `"Any"` explicitly preserves that choice.
 - `Date` expects `current_value` as `"YYYY-MM-DD"`
 - `DateTime` expects `current_value` as `"YYYY-MM-DDTHH:MM:SS"`
 - `Time` expects `current_value` as `"HH:MM:SS"`
@@ -148,7 +149,7 @@ Delete:
 { "operation": "delete_pq_parameter", "target": "Country" }
 ```
 
-`delete_pq_parameter` fails if the target expression does not look like a Power Query parameter (missing `IsParameterQuery=true`).
+`read_pq_parameter`, `update_pq_parameter`, and `delete_pq_parameter` fail if the target is a regular named expression rather than a Power Query parameter. A failed read directs you to `read_named_expression` so the target can still be inspected through its actual resource contract.
 
 Creating, updating, or deleting Power Query parameters updates shared M expressions through the TOM endpoint. MCP reports the mutation outcome but cannot verify the open Power Query document or any Power BI Desktop external-change prompt. Depending on the operation and Desktop version, Desktop may show a refresh prompt or an Apply/Discard prompt. Refresh when data requires it. Do not treat `Apply` or `Discard` as a generic way to accept MCP changes; either action can replace one side's state. Inspect the model before dependent edits. MCP does not block unrelated writes after an M write, and no reload is required before continuing.
 

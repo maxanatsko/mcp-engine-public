@@ -106,6 +106,8 @@ Example: hide salary column:
 
 ## Bulk Role Operations
 
+`dry_run=true` is also valid for a single role or perspective write. It validates the request and returns a one-item preview without approval or model mutation.
+
 ```json
 {
   "operation": "create_role",

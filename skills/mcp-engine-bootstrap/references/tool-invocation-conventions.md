@@ -156,7 +156,7 @@ Some `list_model` `operation: "list"` types support lightweight filters:
 - Columns: `is_key`: boolean filter (key columns only)
 - Relationships: `active_only` (alias: `is_active`) supports `true` (active only) / `false` or omitted (all)
 - `include_system_artifacts`: default `false`, which filters internal Power BI artifacts from list results. Set `true` to return raw metadata.
-  Filtered artifacts include `LocalDateTable_*`, `DateTableTemplate`, `DateTableTemplate_*`, `RowNumber-*`, `column_type="RowNumber"`, and list items owned by filtered system tables.
+  On models at compatibility level 1562 or later, table ownership comes from TOM `SystemManaged`; names, hidden/private state, and lineage tags do not determine ownership. `RowNumber-*` and `column_type="RowNumber"` remain independent system-column signals. On older models where ownership metadata is unavailable, `LocalDateTable_*`, `DateTableTemplate`, and `DateTableTemplate_*` are treated as reserved system patterns; create or rename operations using those patterns are rejected to avoid ambiguous ownership.
 
 `operation: "list"` can also opt into richer outputs:
 
@@ -229,17 +229,18 @@ Some older list operations also expose a top-level `count`; treat `pagination.to
 
 ## Bulk Operations (Most Write Tools)
 
-Many tools that support bulk have these additional arguments:
+Many model-write tools support `dry_run` for both single-object and bulk requests. Bulk requests also expose these controls:
 
-- `items`: array of per-item argument objects (each item uses the same fields as the single call)
+- `items`: non-empty array of per-item argument objects (each item uses the single-call object fields, but `operation` is valid only at the top level); an explicit empty array is rejected
 - `transaction`: boolean, default `true` (stop on first error)
-- `dry_run`: boolean, default `false` (validate and return what would happen)
+- `dry_run`: boolean, default `false` (single or bulk: validate and return what would happen without applying changes)
 - `include_items`: boolean, default `false` (echo original items back in results)
 - `include_details`: boolean, default `false` (include server details where supported)
 
 Bulk precedence rules:
 
 - Top-level bulk controls apply to the whole request.
+- `operation` is required at the top level and is rejected inside every item.
 - Each item must carry its own `table`, `target`, and `spec` when the single-item operation requires them.
 - Top-level `table`, `target`, and `spec` values are not copied into `items[]`.
 - If a bulk item omits a required identifier, the server validates that item as missing data instead of falling back to top-level object identifiers.
@@ -299,7 +300,7 @@ Notes:
 
 ### `dry_run` behavior
 
-When `dry_run=true`, tools typically return `results[].detail` entries describing what would happen, and do not apply changes.
+When `dry_run=true`, single-object requests are planned as one internal item and return the same preview envelope as bulk requests. Tools return `results[].detail` entries describing what would happen and do not request approval, mutate TOM, refresh the model, or persist changes.
 
 ## Calc Group Bulk Notes
 

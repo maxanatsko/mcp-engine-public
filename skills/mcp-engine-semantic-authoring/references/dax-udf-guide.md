@@ -169,6 +169,8 @@ The recommended tool shape is to put parameters in `spec.parameters` and the DAX
 
 ### Validation Results
 
+Before creating or renaming a UDF, SemanticOps checks the terminal function-name segment against the connected provider's current reserved keywords and DAX built-in functions. Explicit parameter names are checked against provider keywords. Existing functions whose names now collide remain updateable and deletable. If provider metadata cannot be read, the write continues with the existing syntax checks and the response warns that collision validation was skipped.
+
 `create_udf` and `update_udf` return a top-level `validation` object with `ok`, `state`, and `error_message` from TOM after the write. If Power BI saves the UDF but reports a non-ready state or an error message, the tool returns an error result and includes `saved_udf`. The mutation outcome remains `applied`: inspect the saved object and correct it with a new update; do not repeat the original create or update.
 
 Each UDF mutation makes one commit attempt. SemanticOps never refreshes metadata and replays the write:

@@ -214,7 +214,7 @@ Policy configuration is parsed and validated once during startup. Values are tri
 
 `MCP_ENGINE_POLICIES_DIR` defaults to `~/.mcp-engine/policies`. Policy paths expand only a leading `~`, `~/`, or `~\`; embedded tildes are preserved. The directory is normalized and checked for writability during startup. `MCP_ENGINE_POLICY_BUNDLE_PATH` is optional and normalized at startup; invalid syntax fails with a sanitized filename-only error. A normalized path may refer to a missing file because existing bundle loading and lockdown behavior handles missing or unreadable bundles at runtime.
 
-- `fail_closed`: local read, JSON, I/O, storage-hardening, store/rule validation, condition, and required context-enrichment failures produce a `processing_failure` decision. Tool execution returns `POLICY_PROCESSING_FAILED`. Only `manage_policy` and `manage_policy_ui` remain available to inspect and repair local policy state.
+- `fail_closed`: local read, JSON, I/O, storage-hardening, store/rule validation, condition, and required context-enrichment failures produce a `processing_failure` decision. Tool execution returns `POLICY_PROCESSING_FAILED`; nested `error.processing_failures[]` preserves every sanitized category, code, message, scope, and rule ID, while the client-visible error text includes the first stable code and rule ID when present. Only `manage_policy` and `manage_policy_ui` remain available to inspect and repair local policy state.
 - `fail_open`: the affected local store contributes no rules, and condition/context failures are treated as non-matches. Evaluation continues through another valid scope and later unrelated rules. A later real rule can still allow, deny, or require confirmation while retaining structured failure metadata.
 
 Local store rejection is atomic per scope. A failed global store does not filter and publish its valid rules; a failed model store behaves the same way. Under explicit `fail_open`, another valid scope may still be evaluated. Enterprise bundle load failure keeps its separate lockdown behavior and recovery allowlist.
@@ -269,6 +269,8 @@ Evaluation simulation resolves the same canonical tool security identity as runt
 - Dependency-aware delete rules for `manage_schema` `delete_partition`, `delete_column`, `delete_calc_column`, `delete_relationship`, `delete_hierarchy`, `delete_calendar`
 - Dependency-aware delete rules for `manage_security` `delete_role`, `delete_perspective`
 - Dependency-aware delete rules for `manage_localization` `delete_culture`
+
+For `manage_schema` `delete_relationship`, policy dependency enrichment accepts the same selectors as the mutation operation: an explicit model relationship name in `target`, or the four endpoint fields. Every explicit model name is resolved case-insensitively to its endpoints before dependency traversal, including names that themselves resemble `FromTable[FromColumn] -> ToTable[ToColumn]`, so policy and mutation cannot select different relationships.
 
 `table-delete-impact-review` covers:
 - Table deletes with severe blast radius are denied

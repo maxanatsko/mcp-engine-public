@@ -162,4 +162,4 @@ Create multiple measures:
 }
 ```
 
-Use `dry_run=true` first when changing many measures.
+Use `dry_run=true` first for either a single measure or a batch. A single-object dry run returns the standard one-item preview envelope without applying the change.

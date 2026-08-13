@@ -47,6 +47,19 @@ These operations require confirmation. If the client does not support elicitatio
 - `undo`
 - `redo`
 
+When confirmation is not granted, the operation fails closed before mutation and returns a structured `error` with `code`, `operation`, and `confirmation_status`:
+
+| Confirmation outcome | `error.code` | `confirmation_status` |
+|---|---|---|
+| Form accepted with `confirmed:false` | `CONFIRMATION_NOT_CONFIRMED` | `not_confirmed` |
+| Client returns MCP `Decline` | `CONFIRMATION_DECLINED` | `declined` |
+| Client returns MCP `Cancel` | `CONFIRMATION_CANCELLED` | `cancelled` |
+| Elicitation unsupported | `CONFIRMATION_REQUIRED` | `unsupported` |
+| Prompt times out | `CONFIRMATION_TIMED_OUT` | `timedout` |
+| Prompt or response fails | `CONFIRMATION_FAILED` | `failed` |
+
+Only MCP `Cancel` includes `cancelled:true`. A client-generated `Decline` is reported as a client outcome and is not attributed to the user. Raw transport diagnostics are not included in the tool result. When the client advertises elicitation support, `confirm:true` does not bypass the prompt.
+
 ## Storage and Configuration
 
 Model changes are stored locally (per user) under:

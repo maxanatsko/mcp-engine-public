@@ -26,16 +26,20 @@ Recommended defaults:
 
 - `runs`: 3–5 for a quick signal; 10+ for stabilizing noisy results
 - Desktop: set `clear_cache: true` when comparing alternatives, but call the runs cold-cache only when the response has no `clear_cache failed` limitation. If clearing fails, resolve it or start a separate run with `clear_cache: false`, discard run 1, and compare the median of runs 2..N; do not mix successful and failed cache-clear attempts.
-- Power BI Service XMLA: cache clearing is unavailable. With `runs >= 3`, the response records this limitation; discard run 1 as warm-up and compare the median of runs 2..N from `all_durations_ms`. Keep the query, run count, and connection kind identical between alternatives, and label the result warm-cache. The Storage Engine / Formula Engine metrics come from discarded run 1, so use them only for diagnostic triage, not as the warm baseline or before/after evidence.
+- Power BI Service XMLA: cache clearing is unavailable. With `runs >= 3`, the response records this limitation; discard run 1 as warm-up and compare the median of runs 2..N from `all_durations_ms`. Keep the query, run count, and connection kind identical between alternatives, and label the result warm-cache. The Storage Engine / Formula Engine metrics under `first_run` come from discarded run 1, so use them only for diagnostic triage, not as the warm baseline or before/after evidence.
 - `use_xevents`: true when available (best metrics)
 
 ## Interpreting Results
 
-The tool returns multiple runs and computed statistics, typically including:
+The tool returns aggregate durations at the response root and an explicitly first-run projection:
 
-- total duration
-- Storage Engine (SE) duration / query count
-- Formula Engine (FE) duration
+- `avg_duration_ms`, `min_duration_ms`, `max_duration_ms`, and `all_durations_ms` describe all requested runs.
+- `first_run.duration_ms` is the first element of `all_durations_ms`.
+- `first_run.storage_engine_ms`, `first_run.formula_engine_ms`, and the other trace timing/resource fields describe only the first traced execution.
+
+The `trace` and `query_plan` projections also come from the first traced execution. They remain top-level because they are diagnostic artifacts rather than multi-run aggregates.
+
+`trace.level` accepts only `off` or `top`. Unsupported trace properties, invalid levels, `top_n` outside 1–50, and `max_text_chars` outside 50–4000 are rejected rather than ignored or clamped.
 
 Common heuristics:
 

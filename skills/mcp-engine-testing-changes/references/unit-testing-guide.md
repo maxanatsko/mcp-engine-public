@@ -434,7 +434,7 @@ Detect data drift by comparing to baseline:
     },
     "assert": {
       "kind": "snapshot",
-      "baseline_id": "baseline:model:monthly-sales-snapshot@2025-01-01T00:00:00Z",
+      "baseline_id": "baseline:stable:11111111-1111-1111-1111-111111111111:monthly-sales-snapshot@2026-08-12T10:15:30.0000000Z",
       "op": "equals"
     }
   }
@@ -442,6 +442,8 @@ Detect data drift by comparing to baseline:
 ```
 
 Snapshot modes: `hash` (deterministic hash), `aggregate` (row count + checksums), `topn` (first N rows), `full` (all data)
+
+`baseline_id` is an opaque identifier returned by snapshot capture or list. Do not construct it. Omit `assert` or `assert.baseline_id` when saving a draft before its first capture. A durable `put` with a baseline reference verifies that the baseline exists for the connected model and belongs to the same test; disconnected validation and `put` dry runs check structure only.
 
 For `DaxQueryResult` snapshots:
 - `hash` and `aggregate` operate on canonicalized row data, not transport-specific CLR numeric types.
@@ -820,7 +822,7 @@ Recapture guidance:
   "operation": "snapshot",
   "spec": {
     "sub_operation": "delete",
-    "baseline_id": "baseline:model:monthly-sales-snapshot@2025-01-01T00:00:00Z"
+    "baseline_id": "baseline:stable:11111111-1111-1111-1111-111111111111:monthly-sales-snapshot@2026-08-12T10:15:30.0000000Z"
   }
 }
 ```
@@ -836,9 +838,10 @@ Snapshot notes:
 - `delete` requires `baseline_id`.
 
 End-to-end baseline flow:
-1. Save a `regression_snapshot` test with `operation: "put"`.
-2. Capture its baseline with `operation: "snapshot"` and `spec.sub_operation: "capture"`.
-3. Run the test with `operation: "run"` to compare current results against the stored baseline.
+1. Save a draft `regression_snapshot` test with `operation: "put"`, omitting `assert` or `assert.baseline_id`.
+2. Capture its baseline with `operation: "snapshot"` and `spec.sub_operation: "capture"`; retain the returned `baseline_id`.
+3. Save the complete test with a second `put`, setting `assert.baseline_id` to the returned identifier. Capture does not activate or replace a test's baseline automatically.
+4. Run the test with `operation: "run"` to compare current results against the stored baseline.
 
 ---
 
@@ -951,7 +954,9 @@ When numeric/PII masking is enabled:
 - `get` returns identification fields but sets `context`, `spec`, and `assert` to null and omits `meta.owner` unless `spec.include_sensitive=true` is explicitly supplied
 - Assertions evaluate on raw values internally (stable behavior)
 - Run results omit assertion `expected`/`actual` values and replace non-null assertion messages with stable pass/fail text
-- Value-bearing `error_message` details are replaced with stable status text; only the known-safe `Test execution timed out` and `Test execution failed` infrastructure messages remain unchanged
+- Value-bearing and unclassified `error_message` details are replaced with stable status text; known structural failures use fixed masking-safe guidance without echoing submitted operators, assertion paths, object names, query errors, or model data
+- Structural guidance covers malformed definitions, unsupported scalar operators, unsupported DAX assertion context, invalid or unresolved DAX assertion paths, multi-row/multi-column result shapes, and truncated DAX assertion results; legacy results without a recognized diagnostic identity continue to fail closed with generic masked text
+- The known-safe `Test execution timed out` and `Test execution failed` infrastructure messages remain unchanged
 - Run identifiers, model and test identifiers, timestamps, summary, durations, assertion kind/status, and capability diagnostics remain available
 - Known skip categories and built-in capability identifiers remain available as stable guidance; arbitrary categories and capability names are removed, skip messages are replaced with stable type-based masked text (except the exact known-safe `Test is disabled` message), and all workarounds are cleared
 - Newly executed runs are projected before persistence, and stored history is projected again on list and JSON/JUnit/Markdown/HTML export so older or unmasked sidecar-created records are safe to read from a masking-enabled host

@@ -179,9 +179,11 @@ Example (`manage_schema` create partition):
 - `query_group` cannot be empty; to remove a group use `clear_query_group=true`.
 - Assigning/clearing query groups on named expressions requires model compatibility level 1480+.
   - Use `allow_compatibility_upgrade=true` on create/update, or upgrade first via `manage_model_properties`.
-- Renaming a named expression does not automatically update partitions that reference it; search via:
-  - `list_model` with `operation: "search"`, `spec: { mode: "m", query: "SharedSqlSource" }` for M partitions/named expressions
-  - `list_model` with `operation: "search"`, `spec: { mode: "partition", query: "SharedSqlSource" }` for non-M partition expressions
+- A named expression cannot be deleted or renamed directly while authoritative dependents remain. Exact partition references are reported by dependency analysis; the final live guard also fails closed on identifier tokens inside partition or named-expression M bodies and identifies the dependent object.
+- The M-body guard is intentionally a bounded lexical safety heuristic, not an M parser or lineage engine. It does not resolve local shadowing, so ambiguous identifier tokens are rejected conservatively. Parser-backed replacement is tracked in [#1141](https://github.com/maxanatsko/mcp-engine/issues/1141).
+- Use `manage_dependencies` with `operation="used_by"` and target type `named_expression` to inspect the exact dependency edge before refactoring.
+- To rename a referenced expression, use one staged Desktop M changeset that renames the expression and rewrites every partition or named-expression reference. The final graph is validated before its single TOM commit, so an unsafe batch performs no model mutation.
+- There is no `force` override for a referenced named-expression delete or rename.
 
 ## Bulk Operations
 

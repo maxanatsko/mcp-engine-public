@@ -212,10 +212,12 @@ Rules:
 
 Key fields in spec:
 
-- `new_name`, `data_type`, `description`, `is_hidden`, `format_string`, `data_category`, `display_folder`
+- `data_type`, `description`, `is_hidden`, `format_string`, `data_category`, `display_folder`
 - `source_column`: update the underlying source mapping for non-calculated (data) columns (useful after M output renames)
 - `summarize_by`: `none|sum|min|max|average|count|distinct_count`
 - `sort_by`: another column in the same table (empty string clears sort-by)
+
+`new_name` is not supported for source columns. A correct Power Query source-column rename must update the owning M output and TOM mapping together; update the partition M expression and reconcile its column schema instead. Rename calculated-table output columns in the calculated table's DAX expression. Calculated columns retain their separate `update_calc_column` rename behavior.
 
 Example: change type and set sort-by:
 
@@ -249,6 +251,8 @@ Create a non-calculated (data/source) column:
 ```
 
 Delete a non-calculated (data/source) column:
+
+Add `"dry_run": true` to a single schema write to validate it and receive a one-item preview without changing the model.
 
 ```json
 {

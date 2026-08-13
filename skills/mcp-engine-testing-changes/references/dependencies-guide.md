@@ -105,9 +105,10 @@ With `include_structural=true`, `manage_dependencies` can return non-expression 
 - Perspective membership
 - Role object permissions (OLS)
 - KPI base measure
+- Named-expression-backed M partitions (`partition -> named_expression`)
 - Calendar members (auto date/time metadata)
 
-These appear in `graph.edges[]` with `mode="structural"` and a `kind` describing the relationship (e.g., `relationship_column`, `sort_by`).
+These appear in `graph.edges[]` with `mode="structural"` and a `kind` describing the relationship (e.g., `relationship_column`, `sort_by`, `partition_named_expression`). Named-expression partition edges are derived from an exact bare or quoted M identifier reference, not substring matching, and identify both the owning table and partition.
 
 ### Calculation dependency source diagnostics
 
