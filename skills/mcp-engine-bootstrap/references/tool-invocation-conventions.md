@@ -102,7 +102,7 @@ Write tools generally validate `spec` keys and will return an error for unknown/
 
 ## Formatting Helpers (`format_dax`, `format_m`)
 
-Some write operations support optional formatting for expressions before saving.
+Some write operations support optional formatting for expressions before saving. Formatting overrides are operation-spec fields: place them under `spec` for a single request or under each item's `spec` in a bulk request. Do not place `format_dax` or `format_m` at the request root.
 
 ### DAX formatting (`format_dax`)
 
@@ -110,11 +110,31 @@ Used by DAX-bearing operations (e.g., calculated partitions, measures, calc item
 
 ```json
 {
-  "format_dax": { "enabled": true, "on_error": "fail" }
+  "operation": "create_measure",
+  "table": "Sales",
+  "target": "Total Sales",
+  "spec": {
+    "expression": "SUM('Sales'[Amount])",
+    "format_dax": {
+      "enabled": true,
+      "on_error": "fail",
+      "indent_style": "spaces",
+      "indent_size": 2,
+      "newline_style": "lf",
+      "max_line_width": 100,
+      "keyword_casing": "upper",
+      "function_name_casing": "preserve",
+      "function_call_layout": "auto",
+      "space_inside_function_call_parentheses": false,
+      "always_multiline_functions": ["CALCULATE", "FILTER"]
+    }
+  }
 }
 ```
 
-DAX formatting runs locally and does not require consent.
+DAX formatting runs locally and does not require consent. All customization fields are optional. Casing accepts `upper`, `lower`, or `preserve`; function layout accepts `auto`, `prefer_single_line`, or `prefer_multiline`; indentation accepts `spaces` or `tabs` with a size from 1 through 16; newline style accepts `lf` or `crlf`. Supplying `always_multiline_functions` replaces the formatter's default list, and an empty array disables forced multiline functions.
+
+When the same option is saved globally through `manage_preferences`, a value inside `format_dax` wins for that operation. Omitted values use the global preference and then the local parser default. `format_dax.enabled` remains required when the object is present; `on_error` accepts `fail` or `skip`.
 
 ### M formatting (`format_m`)
 
@@ -122,14 +142,37 @@ Used by M-bearing operations (e.g., M partitions, named expressions):
 
 ```json
 {
-  "format_m": { "enabled": true, "consent": true, "on_error": "fail" }
+  "operation": "create_named_expression",
+  "target": "SalesSource",
+  "spec": {
+    "expression": "let Source = Sql.Database(\"server.example\", \"Sales\") in Source",
+    "expression_kind": "M",
+    "format_m": {
+      "enabled": true,
+      "on_error": "fail",
+      "indent_style": "spaces",
+      "indent_size": 2,
+      "newline_style": "lf",
+      "max_line_width": 100,
+      "equals_spacing": "single_space",
+      "record_layout": "auto",
+      "list_layout": "auto",
+      "invocation_argument_layout": "auto",
+      "function_parameter_layout": "auto",
+      "trailing_comma_style": "never",
+      "blank_lines_after_section_header": 1,
+      "blank_lines_between_section_members": 1
+    }
+  }
 }
 ```
 
 Notes:
 
-- `consent=true` is required when `enabled=true` because code is sent to an external formatting service.
-- `on_error` controls behavior when formatting fails: `fail` (default) or `skip`.
+- M formatting runs locally with `Pbi.PqParser`; `consent` is not supported.
+- All customization fields are optional. Indentation accepts `spaces` or `tabs` with a size from 1 through 16; newline style accepts `lf` or `crlf`; equals spacing accepts `single_space` or `none`; record, list, invocation-argument, and function-parameter layouts accept `auto`, `inline`, or `multiline`; trailing commas accept `never` or `multiline`; section blank-line counts must be from 0 through 16.
+- Per-operation values override matching `manage_preferences` values, and omitted values fall back to parser defaults.
+- `on_error` controls parse or formatting failures: `fail` (default) or `skip`. Valid source containing comments is returned unchanged so comments cannot be deleted or moved.
 
 ## `list_model` Search Conventions
 

@@ -57,7 +57,7 @@ Optional formatting:
     "partition_type": "M",
     "expression": "let Source = ... in Source",
     "query_group": "Dimensions/Customer",
-    "format_m": { "enabled": true, "consent": true },
+    "format_m": { "enabled": true, "indent_style": "spaces", "indent_size": 2 },
     "columns": [
       { "name": "CustomerId", "data_type": "Int64" },
       { "name": "CustomerName", "data_type": "String" }

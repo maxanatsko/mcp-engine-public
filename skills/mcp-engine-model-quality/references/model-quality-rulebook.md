@@ -221,7 +221,7 @@ Whenever a probe needs an exhaustive inventory, page it before classifying, coun
 
 - Risk: medium
 - Evidence to gather: high-value measures with complex dependencies and no `manage_tests` suggestions or known validation examples.
-- Probe: `manage_tests` `{ "operation": "list" }`, then call `manage_tests` `{ "operation": "get", "target": "<test-id>" }` for every returned test ID and inspect each complete definition's query, context, and target references against the measure inventory. If masking hides those fields, ask for explicit user approval before repeating with `{ "operation": "get", "target": "<test-id>", "spec": { "include_sensitive": true } }`; without approval, label coverage unverified and do not deduct points. Next call `manage_dependencies` `{ "operation": "summary", "spec": { "target": { "type": "measure", "table": "<table>", "name": "<measure>" } } }` for each candidate core measure (`spec.target` is required on every call; there is no global ranking operation) — report which high-dependency measures have no test. Do not infer measure coverage from test names, tags, or list summaries alone.
+- Probe: `manage_tests` `{ "operation": "list" }`, then call `manage_tests` `{ "operation": "get", "target": "<test-id>" }` for every returned test ID and inspect each complete definition's query, context, and target references against the measure inventory. Next call `manage_dependencies` `{ "operation": "summary", "spec": { "target": { "type": "measure", "table": "<table>", "name": "<measure>" } } }` for each candidate core measure (`spec.target` is required on every call; there is no global ranking operation). Report which high-dependency measures have no test. Do not infer measure coverage from test names, tags, or list summaries alone.
 - Recommendation: add tests for core KPIs across representative dimensions, dates, and security contexts.
 - Source: local SemanticOps testing guidance.
 
@@ -229,7 +229,7 @@ Whenever a probe needs an exhaustive inventory, page it before classifying, coun
 
 - Risk: medium
 - Evidence to gather: high-use measures, complex relationship paths, or VertiPaq risks with no representative query analysis.
-- Probe: `manage_tests` `{ "operation": "list" }`, then call `manage_tests` `{ "operation": "get", "target": "<test-id>" }` for every returned test ID and inspect the complete `performance_budget` definitions and their queries. If masking hides those fields, ask for explicit user approval before repeating with `{ "operation": "get", "target": "<test-id>", "spec": { "include_sensitive": true } }`; without approval, label coverage unverified and do not deduct points. Check the visible queries for the measures already flagged by storage or relationship probes; absence alongside a confirmed VertiPaq or path risk is the finding. Do not infer benchmark coverage from test names, tags, or list summaries alone.
+- Probe: `manage_tests` `{ "operation": "list" }`, then call `manage_tests` `{ "operation": "get", "target": "<test-id>" }` for every returned test ID and inspect the complete `performance_budget` definitions and their queries. Check the visible queries for the measures already flagged by storage or relationship probes; absence alongside a confirmed VertiPaq or path risk is the finding. Do not infer benchmark coverage from test names, tags, or list summaries alone.
 - Recommendation: create small benchmark queries and compare timings after remediation.
 - Source: Microsoft import model data reduction guidance; SQLBI VertiPaq guidance.
 

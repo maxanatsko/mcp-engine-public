@@ -299,6 +299,7 @@ This single-commit contract is specific to eligible Desktop M changesets. Servic
 Lifecycle:
 - `draft`: can be updated, previewed, applied, or deleted
 - `applied`: immutable history entry; cannot be deleted
+- `rolled_back`: the linked applied transaction was undone or rolled back; remains immutable history and cannot be deleted
 
 ### Create a changeset
 
@@ -372,7 +373,7 @@ Before another Desktop M changeset:
 { "operation": "delete_changeset", "changeset_id": "cs_123" }
 ```
 
-`delete_changeset` only works for draft changesets. Once a changeset has been applied, it remains in history and cannot be deleted.
+`delete_changeset` only works for draft changesets. Applied and rolled-back changesets remain immutable history and cannot be deleted.
 
 ```json
 { "operation": "list_changesets", "limit": 50, "offset": 0 }

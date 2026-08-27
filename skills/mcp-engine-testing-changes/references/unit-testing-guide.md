@@ -85,12 +85,12 @@ The Tauri test runner uses `runs_list` to hydrate persisted run history for the 
 
 The opt-in response adds a top-level `stability` array. Each entry contains `test_id`, `test_name`, `classification`, evaluated `window`, `passed_on_retry_count`, and `alternation_count`. Classifications use the newest comparable same-definition segment:
 
-- `insufficient_history`: fewer than four comparable passed or failed results, including legacy, masked, or otherwise hashless history.
+- `insufficient_history`: fewer than four comparable passed or failed results, including legacy or otherwise hashless history.
 - `flaky`: any passed-on-retry evidence, or another mixed pass/fail history not classified as degraded.
 - `stable`: every comparable result passed.
 - `degraded`: every comparable result failed, or the newest two results failed after earlier passes.
 
-Skipped, XFail, and error results do not count toward the window or alternations. A definition identity change stops comparison with older results. When masking is enabled, SemanticOps deliberately omits definition identities, so stability fails closed as `insufficient_history`. The internal `definition_hash` is never returned.
+Skipped, XFail, and error results do not count toward the window or alternations. A definition identity change stops comparison with older results. SemanticOps retains the internal identity for masked and unmasked runs, but never returns `definition_hash` in client responses or exports. Legacy masked runs without an identity remain non-comparable.
 
 ## Quick Start
 
@@ -446,9 +446,14 @@ Snapshot modes: `hash` (deterministic hash), `aggregate` (row count + checksums)
 `baseline_id` is an opaque identifier returned by snapshot capture or list. Do not construct it. Omit `assert` or `assert.baseline_id` when saving a draft before its first capture. A durable `put` with a baseline reference verifies that the baseline exists for the connected model and belongs to the same test; disconnected validation and `put` dry runs check structure only.
 
 For `DaxQueryResult` snapshots:
+- Newly captured `hash` and `aggregate` baselines sort canonical row JSON with ordinal comparison before applying `row_cap`. Engine row-order changes therefore do not cause regressions, while duplicate rows and selected-column order remain significant.
 - `hash` and `aggregate` operate on canonicalized row data, not transport-specific CLR numeric types.
 - Whole numbers are normalized so Desktop and Service/XMLA transports hash and compare consistently when the result values are semantically equal.
-- `topn` and `full` preserve the same envelope shape, but row cell values are canonicalized before comparison.
+- `topn` and `full` remain order-sensitive and preserve the same envelope shape, but row cell values are canonicalized before comparison.
+- `validate` and `put` return a non-blocking warning when the final top-level `EVALUATE` clause has no `ORDER BY`. Add `ORDER BY` for intentional, repeatable `topn` or `full` snapshots; `hash` and `aggregate` still canonicalize row order.
+- Existing bare-string `hash` baselines and `aggregate` baselines without `canonical_order: "v2"` retain their legacy ordered comparison semantics. Recapture them when you want order-insensitive comparisons; no automatic rewrite is performed.
+- A v2 hash mismatch reports both baseline and current row counts. A legacy hash mismatch reports `baseline_rows=unknown` because the historical payload does not contain a count; aggregate mismatches continue reporting row counts and checksums.
+- New `hash` and `aggregate` captures and v2 comparisons fail closed when the query result is truncated, because sorting an engine-selected prefix cannot guarantee order-insensitive behavior. Reduce the DAX result or increase the `max_query_rows` preference so the complete result reaches canonical sorting; `row_cap` is applied afterward and does not make an earlier truncation safe.
 
 ### referential_integrity
 
@@ -695,7 +700,7 @@ Use `export_tests` and `import_tests` for portable test-definition bundles. Bund
 
 When upgrading a legacy test database, SemanticOps exports any global definitions before removing them. The recovery bundle is written to the configured tests export/import root as `global-tests-recovery-<timestamp>.json` with user-only local permissions (beside `tests.db` when no separate export root is configured). Connect to the intended destination model, review the bundle, then apply it with `import_tests`; recovery definitions are never silently assigned to a model.
 
-Bundles include full `spec`, `assert`, and `context` payloads. If masking is enabled, `export_tests` requires `spec.include_sensitive=true` as an explicit opt-in. Large inline bundles are saved to the configured tests export root and return `saved_to` with `content_omitted: true`.
+Bundles include full `spec`, `assert`, and `context` payloads. These fields are authored configuration and remain available when numeric or PII masking is enabled. Large inline bundles are saved to the configured tests export root and return `saved_to` with `content_omitted: true`.
 
 ### Export all tests inline
 
@@ -800,8 +805,8 @@ Validation notes:
 ```
 
 Recapture guidance:
-- Existing `hash` baselines should be recaptured when you need Desktop and Service/XMLA parity after upgrading to the canonicalized snapshot behavior.
-- Existing `aggregate` baselines captured before this fix should be treated as legacy and recaptured.
+- Existing `hash` baselines should be recaptured when you need Desktop and Service/XMLA numeric parity or order-insensitive comparison after upgrading to the canonicalized snapshot behavior.
+- Existing `aggregate` baselines captured before this fix remain valid with their original ordered semantics; recapture them to opt in to order-insensitive checksums.
 
 ### List baselines
 
@@ -951,7 +956,8 @@ Tests with unmet `requires` are skipped with a reason and workaround:
 ## Masking Compatibility
 
 When numeric/PII masking is enabled:
-- `get` returns identification fields but sets `context`, `spec`, and `assert` to null and omits `meta.owner` unless `spec.include_sensitive=true` is explicitly supplied
+- `get` returns the complete authored definition, including `context`, `spec`, `assert`, and `meta.owner`
+- `export_tests` returns complete authored definition bundles without a sensitive-content opt-in
 - Assertions evaluate on raw values internally (stable behavior)
 - Run results omit assertion `expected`/`actual` values and replace non-null assertion messages with stable pass/fail text
 - Value-bearing and unclassified `error_message` details are replaced with stable status text; known structural failures use fixed masking-safe guidance without echoing submitted operators, assertion paths, object names, query errors, or model data
@@ -959,7 +965,7 @@ When numeric/PII masking is enabled:
 - The known-safe `Test execution timed out` and `Test execution failed` infrastructure messages remain unchanged
 - Run identifiers, model and test identifiers, timestamps, summary, durations, assertion kind/status, and capability diagnostics remain available
 - Known skip categories and built-in capability identifiers remain available as stable guidance; arbitrary categories and capability names are removed, skip messages are replaced with stable type-based masked text (except the exact known-safe `Test is disabled` message), and all workarounds are cleared
-- Newly executed runs are projected before persistence, and stored history is projected again on list and JSON/JUnit/Markdown/HTML export so older or unmasked sidecar-created records are safe to read from a masking-enabled host
+- Newly executed runs are projected before persistence, and stored history is projected again on list and JSON/JUnit/Markdown/HTML export so older or unmasked sidecar-created records are safe to read from a masking-enabled host. Internal definition identities survive that projection for stability classification and remain absent from client-visible payloads
 - `diagnostics_level: full` is blocked
 - Snapshot modes `topn`/`full` are blocked unless `allow_sensitive_storage: true`
 

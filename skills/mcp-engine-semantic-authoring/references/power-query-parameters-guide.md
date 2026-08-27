@@ -131,7 +131,10 @@ Partial updates:
 - If you supply `type` and/or `required` without `current_value` (and omit `suggested_values`), the server **updates only** `Type` / `IsParameterQueryRequired` and preserves the existing value expression plus the rest of the existing `meta [...]` record (including `AllowedValues` or native `List`).
   - Note: the server does **not** validate or coerce existing `AllowedValues` / `List` values when you change `type`. If you change the type, consider also updating `suggested_values` (or set `suggested_values: { mode: "any" }`) to avoid type-incompatible suggestions in the UI.
 - If you provide only `new_name`, `description`, `query_group`, or `clear_query_group`, the value expression and parameter metadata are preserved.
-- A no-op update, including only `allow_compatibility_upgrade`, is rejected.
+- An update whose requested fields already match the parameter succeeds with
+  disposition `already_in_requested_state` without approval or mutation.
+  Supplying only `allow_compatibility_upgrade` is still rejected because it is
+  not an update field.
 
 ## Read / Delete
 
@@ -176,8 +179,9 @@ Use `items` with `create_pq_parameter`, `update_pq_parameter`, or
 - `transaction=true` projects the whole batch, including rename chains and
   parameter metadata, before approval. It requests approval once and commits
   the compatibility upgrade and all parameter expression changes once.
-- Duplicate or conflicting targets, regular named expressions, and parameter
-  no-op updates are rejected before transactional approval.
+- Duplicate or conflicting targets and regular named expressions are rejected
+  before transactional approval. Already-satisfied parameter updates succeed
+  with disposition `already_in_requested_state` without approval or mutation.
 - `transaction=false` runs one explicit lifecycle per item. It continues after
   a proven not-applied failure only when mandatory audit finalization is
   complete, and stops after an unknown commit outcome or incomplete audit

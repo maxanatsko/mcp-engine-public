@@ -60,7 +60,7 @@ For M partitions on an existing table, provide `columns` matching the existing T
   "spec": {
     "partition_type": "M",
     "expression": "let Source = ... in Source",
-    "format_m": { "enabled": true, "consent": true }
+    "format_m": { "enabled": true, "indent_style": "spaces", "indent_size": 2 }
   }
 }
 ```
@@ -121,7 +121,7 @@ Notes:
     "mode": "Import",
     "partition_type": "M",
     "preserve_schema_mapping": true,
-    "format_m": { "enabled": true, "consent": true }
+    "format_m": { "enabled": true, "indent_style": "spaces", "indent_size": 2 }
   }
 }
 ```
