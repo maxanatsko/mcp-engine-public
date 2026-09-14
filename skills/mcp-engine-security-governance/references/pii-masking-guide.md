@@ -25,7 +25,7 @@ Masking is applied to tool responses that return data values (e.g., query result
 
 ## Pro Licensing Requirement
 
-PII masking requires a Pro tier license allowing the internal feature `pii_masking`. The host mode and startup/runtime settings determine whether the server requests it. If a requested feature is unavailable, the server fails before querying or returning model data with `error_code: "MASKING_UNAVAILABLE"`.
+PII masking requires a Pro tier license allowing the internal feature `pii_masking`. The host mode and startup/runtime settings determine whether the server requests it. In `configured` mode, an unavailable masking entitlement automatically disables that feature so Free-tier data operations remain available. Deployment-enforced `locked_on` mode still fails before querying or returning model data with `error_code: "MASKING_UNAVAILABLE"` when a required feature is unavailable.
 
 ## How to Enable
 
