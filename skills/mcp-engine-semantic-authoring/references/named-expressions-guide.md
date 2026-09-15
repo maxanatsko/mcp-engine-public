@@ -36,7 +36,7 @@ Optional:
 - `list_model` and `read_named_expression` return `expression_kind`; `update_named_expression` preserves the existing kind unless you explicitly set `spec.expression_kind`.
 - `spec.query_group`: assigns the named expression to a Power Query group.
 - `spec.allow_compatibility_upgrade`: allows automatic model compatibility upgrade when required (query groups require compatibility level 1480+).
-- `spec.format_m`: formats the M expression locally with `Pbi.PqParser` before saving; optional per-operation settings override runtime preferences.
+- `spec.format_m`: formats the M expression locally before saving; optional per-operation settings override runtime preferences.
 
 ### Format M on Create
 

@@ -169,10 +169,10 @@ Used by M-bearing operations (e.g., M partitions, named expressions):
 
 Notes:
 
-- M formatting runs locally with `Pbi.PqParser`; `consent` is not supported.
+- M formatting runs locally; `consent` is not supported.
 - All customization fields are optional. Indentation accepts `spaces` or `tabs` with a size from 1 through 16; newline style accepts `lf` or `crlf`; equals spacing accepts `single_space` or `none`; record, list, invocation-argument, and function-parameter layouts accept `auto`, `inline`, or `multiline`; trailing commas accept `never` or `multiline`; section blank-line counts must be from 0 through 16.
 - Per-operation values override matching `manage_preferences` values, and omitted values fall back to parser defaults.
-- `on_error` controls parse or formatting failures: `fail` (default) or `skip`. Valid source containing comments is returned unchanged so comments cannot be deleted or moved.
+- `on_error` controls parse or formatting failures: `fail` (default) or `skip`. Valid source containing comments is formatted with comment text and token attachment preserved.
 
 ## `list_model` Search Conventions
 
