@@ -205,7 +205,7 @@ Some `list_model` `operation: "list"` types support lightweight filters:
 - Columns: `is_key`: boolean filter (key columns only)
 - Relationships: `active_only` (alias: `is_active`) supports `true` (active only) / `false` or omitted (all)
 - `include_system_artifacts`: default `false`, which filters internal Power BI artifacts from list results. Set `true` to return raw metadata.
-  On models at compatibility level 1562 or later, table ownership comes from TOM `SystemManaged`; names, hidden/private state, and lineage tags do not determine ownership. `RowNumber-*` and `column_type="RowNumber"` remain independent system-column signals. On older models where ownership metadata is unavailable, `LocalDateTable_*`, `DateTableTemplate`, and `DateTableTemplate_*` are treated as reserved system patterns; create or rename operations using those patterns are rejected to avoid ambiguous ownership.
+  TOM `SystemManaged=true` identifies managed tables with ordinary names. Power BI auto date/time tables can report `SystemManaged=false`, so `LocalDateTable_*`, `DateTableTemplate`, and `DateTableTemplate_*` remain reserved system patterns at every compatibility level. `RowNumber-*` and `column_type="RowNumber"` remain independent system-column signals.
 
 `operation: "list"` can also opt into richer outputs:
 
