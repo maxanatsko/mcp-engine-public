@@ -59,6 +59,10 @@ Proprietary license with permitted personal and commercial use.
 
 **[View full license](https://semanticops.dev/license)** | **[Third-party notices](https://semanticops.dev/third-party-notices)**
 
+## Security
+
+Report vulnerabilities privately to security@semanticops.dev or through [GitHub private vulnerability reporting](https://github.com/maxanatsko/mcp-engine-public/security/advisories/new). See [SECURITY.md](SECURITY.md).
+
 ## Author
 
 Built by [Maxim Anatsko](https://maxanatsko.com) | Powered by [Model Context Protocol](https://modelcontextprotocol.io)
