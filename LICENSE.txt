@@ -1,115 +1,66 @@
-SemanticOps MCP License (Proprietary)
+# SemanticOps MCP License (Proprietary)
 
-Copyright (c) 2025 Maxim Anatsko. All rights reserved.
+EULA version 1.0
+https://www.semanticops.dev/license/v1.0
 
-By downloading, installing, or using SemanticOps MCP
-("Software"), you agree to these terms.
+Copyright © 2025 Maxim Anatsko. All rights reserved.
 
+By downloading, installing, or using the Power BI Desktop MCP Server ("Software"), you agree to these terms.
 
-DEFINITIONS
+## Definitions
 
-"Organization" means the legal entity that obtained the Software (and
-its employees and contractors acting on its behalf).
+**"Organization"** means the legal entity that obtained the Software (and its employees and contractors acting on its behalf).
 
-"Third party" means any person or entity not part of the Organization.
+**"Third party"** means any person or entity not part of the Organization.
 
+## 1. License grant
 
-1. LICENSE GRANT
+You are granted a non-exclusive, non-transferable, revocable license to install and use the Software as provided in binary form for your own internal use by authorized users within your Organization.
 
-You are granted a non-exclusive, non-transferable, revocable license to
-install and use the Software as provided in binary form for your own
-internal use by authorized users within your Organization.
+## 2. Permitted use
 
+- Connect to your own Power BI Desktop / local Analysis Services model for management and analysis.
+- Integrate with MCP clients such as Claude Desktop / Claude Code in your own environment.
 
-2. PERMITTED USE
+Commercial use means internal use within your Organization, not resale, embedding, or hosting for third parties. You are solely responsible for any credentials, tokens, permissions, and access control used with the Software.
 
-You may use the Software to:
-
-  - Connect to your own Power BI Desktop / local Analysis Services model
-    for management and analysis
-
-  - Integrate with MCP clients such as Claude Desktop / Claude Code in
-    your own environment
-
-Commercial use means internal use within your Organization, not resale,
-embedding, or hosting for third parties.
-
-You are solely responsible for any credentials, tokens, permissions, and
-access control used with the Software.
-
-
-3. PROHIBITED USE
+## 3. Prohibited use
 
 You may not:
 
-  - Modify, adapt, translate, create derivative works from, reverse
-    engineer, decompile, disassemble, or otherwise attempt to derive
-    source code from the Software
-
-  - Redistribute, sublicense, rent, lease, sell, transfer, or make the
-    Software available to any third party
-
-  - Use the Software to provide services to third parties, including as
-    a hosted service, SaaS, service bureau, shared endpoint, or API
-    backend for any application accessible by users other than you or
-    your Organization
-
-  - Expose the Software (or its functionality) over a network to enable
-    third-party access (including forwarding or relaying requests from
-    external users)
-
-  - Use the Software in any system where external users can indirectly
-    access its functionality (including via your application, proxy, or
-    automation layer)
-
-  - Remove or alter copyright notices or proprietary markings
+- Modify, adapt, translate, create derivative works from, reverse engineer, decompile, disassemble, or otherwise attempt to derive source code from the Software.
+- Redistribute, sublicense, rent, lease, sell, transfer, or make the Software available to any third party.
+- Use the Software to provide services to third parties, including as a hosted service, SaaS, service bureau, shared endpoint, or API backend for any application accessible by users other than you or your Organization.
+- Expose the Software (or its functionality) over a network to enable third-party access (including forwarding or relaying requests from external users).
+- Use the Software in any system where external users can indirectly access its functionality (including via your application, proxy, or automation layer).
+- Remove or alter copyright notices or proprietary markings.
 
 Source code is not provided.
 
+## 4. Ownership
 
-4. OWNERSHIP
+The Software is proprietary. All title and intellectual property rights remain with Maxim Anatsko.
 
-The Software is proprietary. All title and intellectual property rights
-remain with Maxim Anatsko.
+## 5. Termination
 
+This license is effective until terminated. It terminates automatically if you breach these terms. Upon termination, you must stop using the Software and delete all copies.
 
-5. TERMINATION
+## 6. Warranty disclaimer
 
-This license is effective until terminated. It terminates automatically
-if you breach these terms. Upon termination, you must stop using the
-Software and delete all copies.
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
 
+## 7. Limitation of liability
 
-6. WARRANTY DISCLAIMER
+IN NO EVENT SHALL MAXIM ANATSKO OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF DATA, PROFITS, OR BUSINESS INTERRUPTION, ARISING OUT OF OR RELATED TO USE OF THE SOFTWARE, HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY.
 
-THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+## 8. Support
 
+Support, maintenance, and updates are provided at the Author's discretion and are not guaranteed.
 
-7. LIMITATION OF LIABILITY
+## 9. Governing law
 
-IN NO EVENT SHALL MAXIM ANATSKO, OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF DATA, PROFITS, OR BUSINESS
-INTERRUPTION, ARISING OUT OF OR RELATED TO USE OF THE SOFTWARE, HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY.
+This Agreement is governed by the laws of the Czech Republic, excluding conflict of laws principles.
 
+## 10. Microsoft disclaimer
 
-8. SUPPORT
-
-Support, maintenance, and updates are provided at the Author's discretion
-and are not guaranteed.
-
-
-9. GOVERNING LAW
-
-This Agreement is governed by the laws of the Czech Republic, excluding
-conflict of laws principles.
-
-
-10. MICROSOFT DISCLAIMER
-
-This Software is independent community-developed software and is not
-affiliated with, endorsed by, or connected to Microsoft Corporation.
-Microsoft product names are trademarks of their respective owners.
+This Software is independent community-developed software and is not affiliated with, endorsed by, or connected to Microsoft Corporation. Microsoft product names are trademarks of their respective owners.
