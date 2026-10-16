@@ -145,7 +145,7 @@ Behavior:
 - The default `MCP_ENGINE_POLICY_FAIL_MODE=fail_closed` blocks tools with `POLICY_PROCESSING_FAILED`; `manage_policy` and `manage_policy_ui` stay available for recovery.
 - Invalid stores are rejected atomically. SemanticOps does not publish a filtered subset of valid rules.
 - Explicit `fail_open` is intended for development. It records the structured failure and continues through another valid scope or later unrelated rules.
-- Enterprise bundle failure retains its separate lockdown status and recovery allowlist.
+- Teams bundle failure retains its separate lockdown status and recovery allowlist.
 
 Fix:
 

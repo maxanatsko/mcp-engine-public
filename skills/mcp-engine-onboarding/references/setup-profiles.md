@@ -65,7 +65,7 @@ Recommend:
 
 - Read-only as the default shared posture; full mode only for trusted maintainers.
 - Browse-only for broad discovery or support users.
-- Separate local Pro recommendations from Enterprise/org-managed policy or audit expectations.
+- Separate local Pro recommendations from Teams/org-managed policy or audit expectations.
 - `security-hardening`, `refresh-and-partition-safety`, `delete-operation-denials`, and `masking-settings-approval`.
 - `documentation-baseline`, `relationship-governance`, `referential-integrity`, and security validation starter tests when roles or OLS are present.
 - Use `mcp-engine-security-governance` and `mcp-engine-testing-changes` as follow-up skills.

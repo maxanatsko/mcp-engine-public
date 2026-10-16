@@ -19,7 +19,7 @@ Group by state:
 - Applied: approved changes already made.
 - Previewed only: packs or tests shown but not applied.
 - Recommended next: useful setup not yet approved.
-- Deferred: requires a model, Pro/Enterprise, admin setup, or user-provided details.
+- Deferred: requires a model, Pro/Teams, admin setup, or user-provided details.
 - Explicitly not changed: important for trust and safety.
 
 ## Masking
@@ -39,7 +39,7 @@ Include:
 - Built-in policy packs selected, previewed, or applied.
 - Custom guardrails requested by the user.
 - Whether deletes, renames, security edits, masking changes, refresh, or partition operations are blocked, confirm-required, or unchanged.
-- Note when policy edits are unavailable due to mode, tier, or Enterprise admin bundle.
+- Note when policy edits are unavailable due to mode, tier, or Teams admin bundle.
 
 ## Preferences And Memory
 
@@ -78,7 +78,7 @@ Include:
 - VertiPaq/performance resources to use when needed.
 - RLS effective-user testing choice and approved identities, if any.
 
-## Enterprise Posture
+## Teams Posture
 
 Include only when relevant:
 

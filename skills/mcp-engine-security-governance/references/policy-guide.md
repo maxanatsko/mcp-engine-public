@@ -150,7 +150,7 @@ Example (JSON-in-string inspection through synthetic parsed fields):
 
 ### Store Schema, Ordering, and Migration
 
-Persisted local stores and Enterprise bundles use policy schema version `1.0`. The top-level `version`, `scope`, and `rules` fields must be present explicitly:
+Persisted local stores and Teams bundles use policy schema version `1.0`. The top-level `version`, `scope`, and `rules` fields must be present explicitly:
 
 - `version` must be exactly `"1.0"`.
 - A global store uses `"scope": "global"` and must omit `scopeId` or set it to `null`.
@@ -217,7 +217,7 @@ Policy configuration is parsed and validated once during startup. Values are tri
 - `fail_closed`: local read, JSON, I/O, storage-hardening, store/rule validation, condition, and required context-enrichment failures produce a `processing_failure` decision. Tool execution returns `POLICY_PROCESSING_FAILED`; nested `error.processing_failures[]` preserves every sanitized category, code, message, scope, and rule ID, while the client-visible error text includes the first stable code and rule ID when present. Only `manage_policy` and `manage_policy_ui` remain available to inspect and repair local policy state.
 - `fail_open`: the affected local store contributes no rules, and condition/context failures are treated as non-matches. Evaluation continues through another valid scope and later unrelated rules. A later real rule can still allow, deny, or require confirmation while retaining structured failure metadata.
 
-Local store rejection is atomic per scope. A failed global store does not filter and publish its valid rules; a failed model store behaves the same way. Under explicit `fail_open`, another valid scope may still be evaluated. Enterprise bundle load failure keeps its separate lockdown behavior and recovery allowlist.
+Local store rejection is atomic per scope. A failed global store does not filter and publish its valid rules; a failed model store behaves the same way. Under explicit `fail_open`, another valid scope may still be evaluated. Teams bundle load failure keeps its separate lockdown behavior and recovery allowlist.
 
 `manage_policy` `operation="status"` reports `local_failure_mode`, `confirmation_unsupported_behavior`, `local_store_state`, and sanitized `local_store_failures`. `operation="evaluate"` reports `decision`, nullable `action`, and structured `processing_failures`. A processing failure has no synthetic rule ID, matched rule, or policy action.
 
@@ -386,7 +386,7 @@ Message templates:
 
 Administrators can deploy a centrally-managed policy bundle that locks out local policy modifications.
 
-**⚠️ Requires Enterprise tier.** The bundle is only activated when the Enterprise license is present. On Pro or Free tiers, the bundle is ignored and normal local policy behavior applies.
+**⚠️ Requires Teams tier.** The bundle is only activated when the Teams license is present. On Pro or Free tiers, the bundle is ignored and normal local policy behavior applies.
 
 ### Configuration
 
@@ -413,7 +413,7 @@ MCP_ENGINE_POLICY_BUNDLE_PATH=/path/to/policy-bundle.json
 }
 ```
 
-### Behavior When Bundle Is Active (Enterprise Tier)
+### Behavior When Bundle Is Active (Teams Tier)
 
 - **Local policies ignored**: The `global.json` and `model_*.json` files are not loaded.
 - **Model scope disabled**: Requesting `scope: "model"` returns an error.
@@ -421,7 +421,7 @@ MCP_ENGINE_POLICY_BUNDLE_PATH=/path/to/policy-bundle.json
 - **Status shows bundle info**: `manage_policy status` includes `bundle_active: true`, `bundle_source`, `bundle_file`.
 - **Policy lockdown source**: Bundle/config controls enforce policy readonly behavior even if local policy rules would otherwise allow writes.
 
-### Behavior When Bundle Is Configured but Not Enterprise
+### Behavior When Bundle Is Configured but Not Teams
 
 When `MCP_ENGINE_POLICY_BUNDLE_PATH` is set but the license is Pro or Free:
 - **Bundle is ignored**: Local policies work normally (`global.json`, `model_*.json`).
@@ -430,9 +430,9 @@ When `MCP_ENGINE_POLICY_BUNDLE_PATH` is set but the license is Pro or Free:
   - `bundle_configured: true`
   - `bundle_active: false`
   - `bundle_ignored_reason: "requires_enterprise"`
-  - `bundle_required_tier: "enterprise"`
+  - `bundle_required_tier: "enterprise"` (`enterprise` is the Teams tier value)
 
-### Bundle Load Failure (Enterprise Tier)
+### Bundle Load Failure (Teams Tier)
 
 If the bundle file is missing, inaccessible, or contains invalid JSON:
 - All tools are denied except an allowlist: `manage_policy`, `manage_policy_ui`, `manage_license`, `manage_license_ui`, `manage_model_connection`, `manage_model_connection_ui`, `list_model`, `run_query`
@@ -443,7 +443,7 @@ If the bundle file is missing, inaccessible, or contains invalid JSON:
 ## Notes
 
 - Policy engine requires Pro tier licensing.
-- Admin Policy Bundle requires Enterprise tier licensing.
+- Admin Policy Bundle requires Teams tier licensing.
 - Model-scope rules are evaluated before global-scope rules.
-- When admin bundle is configured with Enterprise tier, writes are blocked immediately (even before bundle loads).
+- When admin bundle is configured with Teams tier, writes are blocked immediately (even before bundle loads).
 - Tool schemas are cached at startup. If the license tier changes at runtime, a server restart is required for the `manage_policy` tool schema to reflect the new available operations.

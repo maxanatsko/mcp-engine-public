@@ -53,7 +53,7 @@ For team/admin governance:
 - Prefer deny-style rules for high-risk operations.
 - Use `security-hardening`, `delete-operation-denials`, and `refresh-and-partition-safety` for the strictest local guardrails.
 - Use `dependent-delete-denials`, `table-delete-impact-review`, and `unsupported-operation-denials` when deletion workflows must remain available under scoped protection.
-- Keep Enterprise-only policy bundle or audit recommendations separate from local Pro policy packs.
+- Keep Teams-only policy bundle or audit recommendations separate from local Pro policy packs.
 
 ## Custom Rules
 

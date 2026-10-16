@@ -4,7 +4,7 @@ Use this script when the user types "onboarding" or asks to set up SemanticOps M
 
 Opening line:
 
-"I'll ask a series of questions to tailor your SemanticOps MCP setup. I can help with the Free version, activate Pro or Enterprise if you have a key, and set up safety, masking, guardrails, memory, tests, and workflow defaults."
+"I'll ask a series of questions to tailor your SemanticOps MCP setup. I can help with the Free version, activate Pro or Teams if you have a key, and set up safety, masking, guardrails, memory, tests, and workflow defaults."
 
 ## Interview Rules
 
@@ -28,19 +28,21 @@ Avoid these unless the user asks for implementation detail:
 
 Say:
 
-"Before we start, do you have your Pro or Enterprise key handy, or would you like to continue with the Free version?"
+"Before we start, do you have your Pro or Teams key handy, or would you like to continue with the Free version?"
 
 Explain:
 
 - Free supports core semantic-model work where your server mode allows it: connecting, browsing, querying, refresh, and model editing.
 - Pro adds the safety and workflow layer: masking, guardrails, dependency impact checks, checkpoints, tests, model/workspace memory, model reports, and advanced diagnostics.
-- Enterprise adds compliance and centrally managed governance features like audit logs and admin policy bundles.
+- Teams adds compliance and centrally managed governance features like audit logs and admin policy bundles.
+
+Tier values: `manage_license` reports the Teams tier as `tier: "enterprise"`. Treat `enterprise` as Teams and say "Teams" to the user.
 
 Choices:
 
 - Check current tier first. Recommended.
 - Continue with Free for now.
-- Activate Pro or Enterprise.
+- Activate Pro or Teams.
 - Explain what I get with Pro before deciding.
 
 If activating:
@@ -383,13 +385,13 @@ Allowed tools after approval:
 
 - None by default. This is a behavior preference, not a persistent setting unless the user asks to save it.
 
-## 13. Enterprise Posture
+## 13. Teams Posture
 
-Ask only when Enterprise is active or the user mentions audit, compliance, or central governance.
+Ask only when Teams is active or the user mentions audit, compliance, or central governance.
 
 Say:
 
-"Enterprise adds audit evidence and centrally managed policy bundles. These are usually admin-controlled, so I will review posture rather than casually change them."
+"Teams adds audit evidence and centrally managed policy bundles. These are usually admin-controlled, so I will review posture rather than casually change them."
 
 Ask:
 
@@ -401,7 +403,7 @@ Choices:
 - Summarize or export audit evidence.
 - Check if admin policy bundle is active.
 - Prepare an admin handoff note.
-- Skip Enterprise setup.
+- Skip Teams setup.
 
 Allowed tools after approval:
 

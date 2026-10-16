@@ -1,4 +1,4 @@
-# Audit Logging & `manage_audit` (Enterprise)
+# Audit Logging & `manage_audit` (Teams)
 
 `manage_audit` provides a tamper-evident audit trail for MCP tool usage using a SHA-256 hash chain stored in a local SQLite database.
 
@@ -14,7 +14,7 @@ Related:
 
 ## Feature gating
 
-- Requires **Enterprise tier** to execute audit operations and to record tool activity.
+- Requires **Teams tier** to execute audit operations and to record tool activity. Tool results and audit records report this tier as `enterprise`; error code `FEATURE_REQUIRES_ENTERPRISE` means Teams is required.
 - The tool itself is hidden from `tools/list` unless `MCP_ENGINE_AUDIT_TOOL_ENABLED=true`.
 
 ## Storage and configuration

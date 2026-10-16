@@ -1,6 +1,8 @@
 # Feature Setup Guide
 
-Use this guide as the source checklist for the onboarding concierge. It maps the SemanticOps MCP Pro and Enterprise features to plain-language setup questions. Ask about each feature area when it needs a user choice or workflow preference. Mention passive helpers without pretending they are settings.
+Use this guide as the source checklist for the onboarding concierge. It maps the SemanticOps MCP Pro and Teams features to plain-language setup questions. Ask about each feature area when it needs a user choice or workflow preference. Mention passive helpers without pretending they are settings.
+
+Tier values: `manage_license` reports the Teams tier as `tier: "enterprise"`. Treat `enterprise` as Teams and say "Teams" to the user.
 
 ## Free Baseline
 
@@ -10,12 +12,12 @@ SemanticOps MCP works on Free out of the box. Free is enough for core semantic-m
 
 Ask:
 
-"Do you want to continue with Free for now, or do you have a Pro or Enterprise key handy?"
+"Do you want to continue with Free for now, or do you have a Pro or Teams key handy?"
 
 Choices:
 
 - Continue Free for now: keep setup to core model work and explain Pro-only safety features as optional upgrades.
-- Activate Pro or Enterprise: guide the user through activation without echoing the key.
+- Activate Pro or Teams: guide the user through activation without echoing the key.
 - Check current tier first: call `manage_license` status and explain what is already enabled.
 
 Recommended default:
@@ -412,13 +414,13 @@ Approval requirement:
 
 No persistent setup by default. Mention license gating if unavailable.
 
-## Enterprise Audit Logging
+## Teams Audit Logging
 
 Plain-language explanation:
 
-Audit logging records tool activity for compliance and investigation. It is Enterprise-only and often controlled by an admin.
+Audit logging records tool activity for compliance and investigation. It is Teams-only and often controlled by an admin.
 
-Ask only when Enterprise is active or the user mentions audit/compliance:
+Ask only when Teams is active or the user mentions audit/compliance:
 
 "Do you need audit evidence or an audit posture review?"
 
@@ -436,21 +438,21 @@ Review status only; do not change audit posture casually.
 Tool/docs surface:
 
 - `manage_audit`
-- Enterprise feature: `audit_logging`
+- Teams feature: `audit_logging`
 - `audit-logging-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
 - Wiki: https://semanticops.dev/wiki/tools/manage_audit
 
 Approval requirement:
 
-Audit operations require explicit approval and Enterprise availability. Do not expose sensitive audit details unnecessarily.
+Audit operations require explicit approval and Teams availability. Do not expose sensitive audit details unnecessarily.
 
-## Enterprise Admin Policy Bundle
+## Teams Admin Policy Bundle
 
 Plain-language explanation:
 
 Admin policy bundles are centrally managed guardrails. When active, local policy edits may be locked because the organization controls the rules.
 
-Ask only when Enterprise is active, bundle mode is detected, or the user is an admin:
+Ask only when Teams is active, bundle mode is detected, or the user is an admin:
 
 "Is this a centrally governed setup where policy should come from an admin bundle?"
 
@@ -468,7 +470,7 @@ Check status and explain, not change.
 Tool/docs surface:
 
 - `manage_policy` status
-- Enterprise feature: `admin_policy_bundle`
+- Teams feature: `admin_policy_bundle`
 - `policy-guide.md (from the mcp-engine-security-governance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
 - Wiki: https://semanticops.dev/wiki/governance/org-deployment
 
