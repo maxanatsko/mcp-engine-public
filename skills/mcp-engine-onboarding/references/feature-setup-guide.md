@@ -347,7 +347,7 @@ Ask before collecting query plans or timings.
 Tool/docs surface:
 
 - `run_query` parameters: `include_query_plan`, `include_timings`, `trace`
-- Pro feature: `advanced_tool_use`
+- These `run_query` parameters require Pro.
 - Related resources: `query-performance-guide.md (from the mcp-engine-dax-performance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`, `dax-query-plan-reference.md (from the mcp-engine-dax-performance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`, `vertipaq-optimization-guide.md (from the mcp-engine-dax-performance skill; if not installed, rely on the tool's inputSchema or ask the user to add that skill)`
 
 Approval requirement:
