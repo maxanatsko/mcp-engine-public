@@ -37,7 +37,11 @@ The tool returns aggregate durations at the response root and an explicitly firs
 - `first_run.duration_ms` is the first element of `all_durations_ms`.
 - `first_run.storage_engine_ms`, `first_run.formula_engine_ms`, and the other trace timing/resource fields describe only the first traced execution.
 
-The `trace` and `query_plan` projections also come from the first traced execution. They remain top-level because they are diagnostic artifacts rather than multi-run aggregates.
+The `trace` and `query_plan` projections describe the first traced execution. The trace uses the measured query's own session, activity, and request identifiers. When trace capture is unavailable or session impersonation is active, analysis reports wall-clock timing.
+
+- `direct_query_ms` counts elapsed time covered by DirectQuery events. `storage_engine_ms` counts elapsed time covered by VertiPaq or DirectQuery events. Both count overlapping intervals once.
+- `first_run.memory_used_kb` reports approximate peak memory for the request when Power BI emits correlated execution metrics. The equivalent execute timing fields use the same measurement.
+- Zero denotes unavailable peak memory. Per-event `memory_used_kb`, `memory_used_mb`, and `estimated_rows` retain their response keys and return zero because trace events provide no documented equivalent for these estimates.
 
 `trace.level` accepts only `off` or `top`. Unsupported trace properties, invalid levels, `top_n` outside 1–50, and `max_text_chars` outside 50–4000 are rejected rather than ignored or clamped.
 
